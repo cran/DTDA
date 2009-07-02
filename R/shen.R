@@ -38,11 +38,15 @@ V<-V[-navec]
 if(is.na(wt)==TRUE) wt<-rep(1/length(X),times=length(X))
 
 D<-cbind(X,U,V)
-if(all(is.na(V))==TRUE)D[,3]<-rep(Inf,times=length(X))
+if(all(is.na(V))==TRUE){
+D[,3]<-rep(max(D[,1])+1,length(X))
+}
+
 if(all(is.na(U))==TRUE){
-D[,2]<--D[,3]
-D[,1]<--D[,1]
-D[,3]<-rep(Inf,length(X))
+D[,2]<-rep(min(D[,1])-1,length(X))
+D[,1]<-D[,1]
+D[,3]<-D[,3]
+
 }
 
 
@@ -53,11 +57,11 @@ C[,2:ncol(D)]<-D[ord,2:ncol(D)]
 
 if(is.na(error)==TRUE) error<-1/(10*nrow(C))
 J<-matrix(data=0,ncol=nrow(C),nrow=nrow(C))
-for (k in 1:nrow(C)){
+for (i in 1:nrow(C)){
 for(j in 1:nrow(C)) {
 a1<-min(C[j,2],C[j,3])
       b1<-max(C[j,2],C[j,3])
-if(C[k,1]>=a1 & C[k,1]<=b1) J[k,j]<-1
+if(C[i,1]>=a1 & C[i,1]<=b1) J[i,j]<-1
 }}
 
 JI<-t(J)
@@ -68,7 +72,6 @@ if(is.na(nmaxit)==TRUE)nmaxit<-100
 iter<-0
 while(S0>error | iter>nmaxit){
 iter<-iter+1
-cat("iter",iter,"\n")
 F0<-JI%*%f
 k0<-((sum(1/F0))^(-1))*(1/F0)
 if(sum(k0)!=1)k0<-k0/sum(k0)
@@ -80,46 +83,123 @@ S0<-max(abs(f-f0))
 f0<-f
 k0<-k
 }
-FF<-matrix(data=0, ncol=1, nrow=nrow(C))
-for(i in 1:nrow(C)){
-FF[i,]<-sum(f[1:i,])
-}
-
-Sob<-matrix(data=0, ncol=1, nrow=nrow(D))
-for(j in 1:nrow(D)){
-Sob[j,]<-1-FF[j,]+f[j,]
-}
 
 
 
+mult <- tabulate(match(C[,1],unique(C[,1])))
+	if(sum(mult)==length(unique(C[,1]))){   
+		Fval <- (f*mult)}
+	if(sum(mult)>length(unique(C[,1]))){
+		weigth<-f[!duplicated(C[,1])]
+		Fval<- (weigth*mult)}
+	
+x<-unique(C[,1])
+events<-sum(mult)
+n.event<-mult
+
+FF<-cumsum(Fval)
+Sob<-1-FF+Fval
+Sob[Sob<1e-12]<-0
 
 if(trunc=="both"){
 
+indbbb<-seq(1,nrow(C),by=1)
+indbbu<-seq(1,nrow(C),by=1)
+indbbv<-seq(1,nrow(C),by=1)
+
+
+
 kMUV<-cbind(U,V,k)
+
+ordUV<-order(kMUV[,1])
+kMUV[,1]<-sort(kMUV[,1])
+kMUV[,2]<-kMUV[ordUV,2]
+
+
+kuv<-numeric(nrow(C))
+for(i in 1:nrow(kMUV)){
+	indbbb<-((kMUV[,1]==kMUV[i,1])&(kMUV[,2]==kMUV[i,2]))
+	pos1<-min(which(indbbb==TRUE))
+	if(pos1==1){
+	kuv[indbbb]<-sum(k[indbbb])}
+	if(pos1>1){
+	kuv[indbbb]<-sum(k[indbbb])
+	}
+}
+
+KUUVV<-cbind(kMUV[,1],kMUV[,2])
+
+multC<-dim(unique(KUUVV,margin=1))[1] 
+if(multC==dim(KUUVV)[1]){
+	mult8<-rep(1,times=multC)   
+	FKval <- (kuv*mult8)}
+if(multC<dim(KUUVV)[1]){
+	weigth8<-kuv[!duplicated(KUUVV,margin=1)]
+	mult8<-numeric(multC)
+	for(i in 1:multC){
+	for(j in 1:dim(KUUVV)[1]){
+		aux8<-sum(KUUVV[j,]==unique(KUUVV,margin=1)[i,])
+		if(aux8==2) mult8[i]<-mult8[i]+1
+	}}
+	FKval<- (weigth8)}
+
+
 kMU<-cbind(U,k)
 ordU<-order(kMU[,1])
 kMU[,1]<-sort(kMU[,1])
 kMU[,2]<-kMU[ordU,2]
+
+
+kk0u<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbbu<-(kMU[,1]==kMU[i,1])
+	posu<-min(which(indbbu==TRUE))
+	if(posu==1){
+	kk0u[indbbu]<-sum(kMU[,2][indbbu])}
+	if(posu>1){
+	kk0u[indbbu]<-sum(kMU[,2][indbbu])
+	}
+}
+
+
+multu <- tabulate(match(kMU[,1],unique(kMU[,1])))
+	if(sum(multu)==length(unique(kMU[,1]))){   
+		fUval <- (kk0u)}
+	if(sum(multu)>length(unique(kMU[,1]))){
+		weigthu<-kk0u[!duplicated(kMU[,1])]
+		fUval<- (weigthu)}
+
+	
+UU<-unique(kMU[,1])
+fU<-cumsum(fUval)
+
+
 kMV<-cbind(V,k)
 ordV<-order(kMV[,1])
 kMV[,1]<-sort(kMV[,1])
 kMV[,2]<-kMV[ordV,2]
 
+kk0v<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbbv<-(kMV[,1]==kMV[i,1])
+	posv<-min(which(indbbv==TRUE))
+	if(posv==1){
+	kk0v[indbbv]<-sum(kMU[,2][indbbv])}
+	if(posv>1){
+	kk0v[indbbv]<-sum(kMU[,2][indbbv])
+	}
+}
 
-fU<-matrix(data=0, nrow=nrow(C),ncol=1)
-fV<-matrix(data=0, nrow=nrow(C),ncol=1)
 
-for (i in 1:nrow(C)){
-for(j in 1:nrow(C)){
-if(kMU[i,1]<=kMU[j,1])
-                        fU[j,]<-sum(kMU[1:i,2])
-                        }}
+multv <- tabulate(match(kMV[,1],unique(kMV[,1])))
+	if(sum(multv)==length(unique(kMV[,1]))){   
+		fVval <- (kk0v)}
+	if(sum(multv)>length(unique(kMV[,1]))){
+		weigthv<-kk0v[!duplicated(kMV[,1])]
+		fVval<- (weigthv)}
 
-for (i in 1:nrow(C)){
-for(j in 1:nrow(C)){
-if(kMV[i,1]<=kMV[j,1])
-fV[j,]<-sum(kMV[1:i,2])
-}}
+VV<-unique(kMV[,1])
+fV<-cumsum(fVval)
 
 
 KK<-matrix(data=0, ncol=nrow(C), nrow=nrow(C))
@@ -134,13 +214,13 @@ KK[i,j]<-KK[i,j]+kMUV[l,3]
 
 if(plot.joint==TRUE){
 if(plot.type=="image"){
-image(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution")
-filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
-filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+image(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
 }
 if(plot.type=="persp"){
 fcol<-topo.colors(10)[cut(KK[2:nrow(C),2:nrow(C)],10,include.lowest=TRUE)]
-                   persp(x=sort(U),y=sort(V),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+                   persp(x=sort(U+runif(length(U),0,0.00001)),y=sort(V+runif(length(U),0,0.00001)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
 
 }
 
@@ -152,24 +232,50 @@ if(plot.joint==FALSE){
 
 if(trunc=="left"){
 
+indbbb<-seq(1,nrow(C),by=1)
+indbb9<-seq(1,nrow(C),by=1)
+
+
 kMU<-cbind(U,k)
 ordU<-order(kMU[,1])
 kMU[,1]<-sort(kMU[,1])
 kMU[,2]<-kMU[ordU,2]
 
 
-fU<-matrix(data=0, nrow=nrow(C),ncol=1)
-
-for (i in 1:nrow(C)){
-for(j in 1:nrow(C)){
-if(kMU[i,1]<=kMU[j,1])
-                        fU[j,]<-sum(kMU[1:i,2])
-                        }}
-fV<-rep(NA,length(fU))
-KK<-NA
+kk0b<-numeric(nrow(kMU))
+for(i in 1:nrow(kMU)){
+	indbb9<-(kMU[,1]==kMU[i,1])
+	pos9<-min(which(indbb9==TRUE))
+	if(pos9==1){
+	kk0b[indbb9]<-sum(kMU[,2][indbb9])}
+	if(pos9>1){
+	kk0b[indbb9]<-sum(kMU[,2][indbb9])
+	}
 }
 
+
+
+mult3 <- tabulate(match(kMU[,1],unique(kMU[,1])))
+	if(sum(mult3)==length(unique(kMU[,1]))){   
+		fUval <- (kk0b)}
+	if(sum(mult3)>length(unique(kMU[,1]))){
+		weigth3<-kk0b[!duplicated(kMU[,1])]
+		fUval<- (weigth3)}
+	
+UU<-unique(kMU[,1])
+ku<-fUval
+fU<-cumsum(fUval)
+
+
+}
+
+
 if(trunc=="right"){
+
+
+
+indbbb<-seq(1,nrow(C),by=1)
+indbb9<-seq(1,nrow(C),by=1)
 
 
 kMV<-cbind(V,k)
@@ -178,17 +284,31 @@ kMV[,1]<-sort(kMV[,1])
 kMV[,2]<-kMV[ordV,2]
 
 
-fV<-matrix(data=0, nrow=nrow(C),ncol=1)
+
+kk0b<-numeric(nrow(kMV))
+for(i in 1:nrow(kMV)){
+	indbb9<-(kMV[,1]==kMV[i,1])
+	pos9<-min(which(indbb9==TRUE))
+	if(pos9==1){
+	kk0b[indbb9]<-sum(kMV[,2][indbb9])}
+	if(pos9>1){
+	kk0b[indbb9]<-sum(kMV[,2][indbb9])
+	}
+}
 
 
-for (i in 1:nrow(C)){
-for(j in 1:nrow(C)){
-if(kMV[i,1]<=kMV[j,1])
-fV[j,]<-sum(kMV[1:i,2])
-}}
+mult4 <- tabulate(match(kMV[,1],unique(kMV[,1])))
+	if(sum(mult4)==length(unique(kMV[,1]))){   
+		fVval <- (kk0b)}
+	if(sum(mult4)>length(unique(kMV[,1]))){
+		weigth4<-kk0b[!duplicated(kMV[,1])]
+		fVval<- (weigth4)}
 
-fU<-rep(NA,length(fV))
-KK<-NA
+
+VV<-unique(kMV[,1])
+kv<-fVval
+fV<-cumsum(kv)
+
 
 }
 
@@ -217,9 +337,23 @@ k1bV<-matrix(0,nrow=nrow(C),ncol=B)
 
 
 ind<-seq(1,nrow(C),by=1)
+indbb7<-seq(1,nrow(C),by=1)
+indbb1<-seq(1,nrow(C),by=1)
+
+
+if(B<40){
+cat("Warning. Number of replicates less than 40","\n")
+cat("Confidence bands cannot be computed","\n")
+}
+
+
 
 for (b in 1:B){
-cat("Resample B",b,"\n")
+
+if(b==1) cat("Resample B",b,"\n")
+r<-floor(B/4)*floor(b/floor(B/4))-b
+if(abs(r)==0|b==B) cat("Resample B",b,"\n")
+
 indb<-sample(ind,nrow(C),replace=TRUE)
 M1b<-C[indb,]
 ord<-order(M1b[,1])
@@ -227,11 +361,11 @@ M2b[,1]<-sort(M1b[,1])
 M2b[,2:ncol(M1b)]<-M1b[ord,2:ncol(M1b)]
 
 Jb<-matrix(data=0,ncol=nrow(M2b),nrow=nrow(M2b))
-for (k in 1:nrow(M2b)){
+for (i in 1:nrow(M2b)){
 for(j in 1:nrow(M2b)) {
 a2<-min(M2b[j,2],M2b[j,3])
      b2<-max(M2b[j,2],M2b[j,3])
-if(M2b[k,1]>=a2 & M2b[k,1]<=b2) Jb[k,j]<-1
+if(M2b[i,1]>=a2 & M2b[i,1]<=b2) Jb[i,j]<-1
 }}
 JIb<-t(Jb)
 f0b<-matrix(data=wt,ncol=1,nrow=nrow(M2b))
@@ -251,14 +385,34 @@ S0b<-max(abs(f1b-f0b))
 f0b<-f1b
 k0b<-k1b
 }
-FF0b<-matrix(data=0, ncol=1, nrow=nrow(M2b))
-for(i in 1:nrow(M2b)){
-FF0b[i,]<-sum(f1b[1:i,])
- }
-Sobb<-matrix(data=0, ncol=1, nrow=nrow(M2b))
-for(j in 1:nrow(M2b)){
-Sobb[j,]<-1-FF0b[j,]+f1b[j,]
+
+ff0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb1<-(C[,1]==C[i,1])
+	pos1<-min(which(indbb1==TRUE))
+	if(pos1==1){
+	ff0b[indbb1]<-sum(f1b[indbb1])}
+	if(pos1>1){
+	ff0b[indbb1]<-sum(f1b[indbb1])
+	}
 }
+
+
+
+FF0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb7<-(C[,1]==C[i,1])
+	pos0<-min(which(indbb7==TRUE))
+	if(pos0==1){
+	FF0b[indbb7]<-sum(f1b[indbb7])}
+	if(pos0>1){
+	FF0b[indbb7]<-sum(f1b[indbb7])+FF0b[pos0-1]
+	}
+}
+Sobb<-1-FF0b+ff0b
+Sobb[Sobb<1e-12]<-0
+
+
 M_IF0[,b]<-as.vector(FF0b)
 M_IF01[,b]<-as.vector(f1b)
 M_IF0Sob[,b]<-as.vector(Sobb)
@@ -271,16 +425,14 @@ ord3<-sort(M2b[,2])
 ord4<-sort(M2b[,3])
 M3b[,b]<-ord3
 M4b[,b]<-ord4
-k1bU[,b]<-k1b[ordU,]
-k1bV[,b]<-k1b[ordV,]
 
-
-
+k1bU[,b]<-k1b[ordU]
+k1bV[,b]<-k1b[ordV]
 
 for (i in 1:nrow(C)){
 for(j in 1:nrow(C)){
 if(M3b[i,b]<=kMU[j,1])
-                        M_fU[j,b]<-sum(k1bU[1:i,b])
+            M_fU[j,b]<-sum(k1bU[1:i,b])
                         }}
 
 for (i in 1:nrow(C)){
@@ -288,8 +440,6 @@ for(j in 1:nrow(C)){
 if(M4b[i,b]<=kMV[j,1])
 M_fV[j,b]<-sum(k1bV[1:i,b])
 }}
-
-
 
 }
 
@@ -342,21 +492,37 @@ k1bU<-matrix(0,nrow=nrow(C),ncol=B)
 
 
 ind<-seq(1,nrow(C),by=1)
+indbb1<-seq(1,nrow(C),by=1)
+indbb7<-seq(1,nrow(C),by=1)
+
+if(B<40){
+cat("Warning. Number of replicates less than 40","\n")
+cat("Confidence bands cannot be computed","\n")
+}
+
+
 
 for (b in 1:B){
-cat("Resample B",b,"\n")
+
+
+#if(b==1) cat("Resample B",b,"\n")
+#r<-floor(B/4)*floor(b/floor(B/4))-b
+#if(abs(r)==0|b==B) cat("Resample B",b,"\n")
+
 indb<-sample(ind,nrow(C),replace=TRUE)
+
+
 M1b<-C[indb,]
 ord<-order(M1b[,1])
 M2b[,1]<-sort(M1b[,1])
 M2b[,2:ncol(M1b)]<-M1b[ord,2:ncol(M1b)]
 
 Jb<-matrix(data=0,ncol=nrow(M2b),nrow=nrow(M2b))
-for (k in 1:nrow(M2b)){
+for (i in 1:nrow(M2b)){
 for(j in 1:nrow(M2b)) {
 a2<-min(M2b[j,2],M2b[j,3])
      b2<-max(M2b[j,2],M2b[j,3])
-if(M2b[k,1]>=a2 & M2b[k,1]<=b2) Jb[k,j]<-1
+if(M2b[i,1]>=a2 & M2b[i,1]<=b2) Jb[i,j]<-1
 }}
 JIb<-t(Jb)
 f0b<-matrix(data=wt,ncol=1,nrow=nrow(M2b))
@@ -376,14 +542,34 @@ S0b<-max(abs(f1b-f0b))
 f0b<-f1b
 k0b<-k1b
 }
-FF0b<-matrix(data=0, ncol=1, nrow=nrow(M2b))
-for(i in 1:nrow(M2b)){
-FF0b[i,]<-sum(f1b[1:i,])
- }
-Sobb<-matrix(data=0, ncol=1, nrow=nrow(M2b))
-for(j in 1:nrow(M2b)){
-Sobb[j,]<-1-FF0b[j,]+f1b[j,]
+
+ff0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb7<-(C[,1]==C[i,1])
+	pos7<-min(which(indbb7==TRUE))
+	if(pos7==1){
+	ff0b[indbb7]<-sum(f1b[indbb7])}
+	if(pos7>1){
+	ff0b[indbb7]<-sum(f1b[indbb7])
+	}
 }
+
+
+
+FF0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb1<-(C[,1]==C[i,1])
+	pos0<-min(which(indbb1==TRUE))
+	if(pos0==1){
+	FF0b[indbb1]<-sum(f1b[indbb1])}
+	if(pos0>1){
+	FF0b[indbb1]<-sum(f1b[indbb1])+FF0b[pos0-1]
+	}
+}
+Sobb<-1-FF0b+ff0b
+Sobb[Sobb<1e-12]<-0
+
+
 M_IF0[,b]<-as.vector(FF0b)
 M_IF01[,b]<-as.vector(f1b)
 M_IF0Sob[,b]<-as.vector(Sobb)
@@ -393,7 +579,7 @@ M_IF0Sob[,b]<-as.vector(Sobb)
 ordA<-order(M2b[,2])
 ord3<-sort(M2b[,2])
 M3b[,b]<-ord3
-k1bU[,b]<-k1b[ordU,]
+k1bU[,b]<-k1b[ordU]
 
 
 
@@ -431,14 +617,14 @@ M_fU_sort[i,]<-sort(M_fU[i,])
 lowerU<-M_fU_sort[,floor(alpha*B/2)]
 upperU<-M_fU_sort[,floor((1-alpha/2)*B)]
 
-upperV<-rep(NA,length(C))
-lowerV<-rep(NA,length(C))
 }
 
 if(trunc=="right"){
 
 M1b<-matrix(0,nrow=nrow(C),ncol=ncol(C))
 M2b<-matrix(0,nrow=nrow(C),ncol=ncol(C))
+M2bb<-matrix(0,nrow=nrow(C),ncol=ncol(C))
+
 M_IF0<-matrix(0,nrow=nrow(C),ncol=B)
 M_IF01<-matrix(0,nrow=nrow(C),ncol=B)
 M_IF0Sob<-matrix(0,nrow=nrow(C),ncol=B)
@@ -449,9 +635,21 @@ k1bV<-matrix(0,nrow=nrow(C),ncol=B)
 
 
 ind<-seq(1,nrow(C),by=1)
+indbb1<-seq(1,nrow(C),by=1)
+indbb7<-seq(1,nrow(C),by=1)
+
+if(B<40){
+cat("Warning. Number of replicates less than 40","\n")
+cat("Confidence bands cannot be computed","\n")
+}
+
 
 for (b in 1:B){
-cat("Resample B",b,"\n")
+
+if(b==1) cat("Resample B",b,"\n")
+r<-floor(B/4)*floor(b/floor(B/4))-b
+if(abs(r)==0|b==B) cat("Resample B",b,"\n")
+
 indb<-sample(ind,nrow(C),replace=TRUE)
 M1b<-C[indb,]
 ord<-order(M1b[,1])
@@ -459,11 +657,11 @@ M2b[,1]<-sort(M1b[,1])
 M2b[,2:ncol(M1b)]<-M1b[ord,2:ncol(M1b)]
 
 Jb<-matrix(data=0,ncol=nrow(M2b),nrow=nrow(M2b))
-for (k in 1:nrow(M2b)){
+for (i in 1:nrow(M2b)){
 for(j in 1:nrow(M2b)) {
 a2<-min(M2b[j,2],M2b[j,3])
      b2<-max(M2b[j,2],M2b[j,3])
-if(M2b[k,1]>=a2 & M2b[k,1]<=b2) Jb[k,j]<-1
+if(M2b[i,1]>=a2 & M2b[i,1]<=b2) Jb[i,j]<-1
 }}
 JIb<-t(Jb)
 f0b<-matrix(data=wt,ncol=1,nrow=nrow(M2b))
@@ -483,26 +681,48 @@ S0b<-max(abs(f1b-f0b))
 f0b<-f1b
 k0b<-k1b
 }
-FF0b<-matrix(data=0, ncol=1, nrow=nrow(M2b))
-for(i in 1:nrow(M2b)){
-FF0b[i,]<-sum(f1b[1:i,])
- }
-Sobb<-matrix(data=0, ncol=1, nrow=nrow(M2b))
-for(j in 1:nrow(M2b)){
-Sobb[j,]<-1-FF0b[j,]+f1b[j,]
+
+ff0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb7<-(C[,1]==C[i,1])
+	pos7<-min(which(indbb7==TRUE))
+	if(pos7==1){
+	ff0b[indbb7]<-sum(f1b[indbb7])}
+	if(pos7>1){
+	ff0b[indbb7]<-sum(f1b[indbb7])
+	}
 }
+
+
+
+FF0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb1<-(C[,1]==C[i,1])
+	pos0<-min(which(indbb1==TRUE))
+	if(pos0==1){
+	FF0b[indbb1]<-sum(f1b[indbb1])}
+	if(pos0>1){
+	FF0b[indbb1]<-sum(f1b[indbb1])+FF0b[pos0-1]
+	}
+}
+
+
+
+Sobb<-1-FF0b+ff0b
+Sobb[Sobb<1e-12]<-0
+Sobb[Sobb<1e-12]<-0
+FF0b[FF0b<1e-12]<-0
+
+
 M_IF0[,b]<-as.vector(FF0b)
 M_IF01[,b]<-as.vector(f1b)
 M_IF0Sob[,b]<-as.vector(Sobb)
 
 
-
 ordB<-order(M2b[,3])
 ord4<-sort(M2b[,3])
-
 M4b[,b]<-ord4
-k1bV[,b]<-k1b[ordV,]
-
+k1bV[,b]<-k1b[ordV]
 
 
 
@@ -510,9 +730,8 @@ k1bV[,b]<-k1b[ordV,]
 for (i in 1:nrow(C)){
 for(j in 1:nrow(C)){
 if(M4b[i,b]<=kMV[j,1])
-M_fV[j,b]<-sum(k1bV[1:i,b])
-}}
-
+                        M_fV[j,b]<-sum(k1bV[1:i,b])
+                        }}
 
 
 }
@@ -539,10 +758,6 @@ M_fV_sort[i,]<-sort(M_fV[i,])
 }
 lowerV<-M_fV_sort[,floor(alpha*B/2)]
 upperV<-M_fV_sort[,floor((1-alpha/2)*B)]
-
-upperU<-rep(NA,length(C))
-lowerU<-rep(NA,length(C))
-
 
 
 }
@@ -575,10 +790,23 @@ M3b<-matrix(0,nrow=nrow(C),ncol=B)
 M4b<-matrix(0,nrow=nrow(C),ncol=B)
 k1bU<-matrix(0,nrow=nrow(C),ncol=B) 
 k1bV<-matrix(0,nrow=nrow(C),ncol=B)
+indbb<-seq(1,nrow(C),by=1)
+indbb1<-seq(1,nrow(C),by=1)
+
+
+if(B<40){
+cat("Warning. Number of replicates less than 40","\n")
+cat("Confidence bands cannot be computed","\n")
+}
+
 
 
 for(b in 1:B){
-cat("Resample B",b,"\n")
+
+if(b==1) cat("Resample B",b,"\n")
+r<-floor(B/4)*floor(b/floor(B/4))-b
+if(abs(r)==0|b==B) cat("Resample B",b,"\n")
+
 DB<-matrix(0,nrow=nrow(C),ncol=3)
 DB[,1]<-sample(C[,1],size=nrow(C),replace=TRUE,prob=W1)
 indUV<-sample(ind,size=nrow(C),replace=TRUE,prob=W2)
@@ -604,11 +832,11 @@ DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
 error<-1/(10*nrow(DBB))
 Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
-for (k in 1:nrow(DBB)){
+for (i in 1:nrow(DBB)){
 for(j in 1:nrow(DBB)) {
 a2<-min(DBB[j,2],DBB[j,3])
       b2<-max(DBB[j,2],DBB[j,3])
-if(DBB[k,1]>=a2 & DBB[k,1]<=b2) Jb[k,j]<-1
+if(DBB[i,1]>=a2 & DBB[i,1]<=b2) Jb[i,j]<-1
 }}
 JIb<-t(Jb)
 f0b<-matrix(data=1/nrow(DBB),ncol=1,nrow=nrow(DBB))
@@ -629,14 +857,33 @@ S0b<-max(abs(f1b-f0b))
 f0b<-f1b
 k0b<-k1b
 }
-FF0b<-matrix(data=0, ncol=1, nrow=nrow(DBB))
-for(i in 1:nrow(DBB)){
-FF0b[i,]<-sum(f1b[1:i,])
+
+ff0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb1<-(C[,1]==C[i,1])
+	pos1<-min(which(indbb1==TRUE))
+	if(pos1==1){
+	ff0b[indbb1]<-sum(f1b[indbb1])}
+	if(pos1>1){
+	ff0b[indbb1]<-sum(f1b[indbb1])
+	}
 }
-Sobb<-matrix(data=0, ncol=1, nrow=nrow(DBB))
-for(j in 1:nrow(DBB)){
-Sobb[j,]<-1-FF0b[j,]+f1b[j,]
+
+
+FF0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb<-(C[,1]==C[i,1])
+	posb<-min(which(indbb==TRUE))
+	if(posb==1){
+	FF0b[indbb]<-sum(f1b[indbb])}
+	if(posb>1){
+	FF0b[indbb]<-sum(f1b[indbb])+FF0b[posb-1]
+	}
 }
+
+Sobb<-1-FF0b+ff0b
+Sobb[Sobb<1e-12]<-0
+
 
 M_IF0[,b]<-as.vector(FF0b)
 M_IF01[,b]<-as.vector(f1b)
@@ -650,8 +897,8 @@ ord3<-sort(DBB[,2])
 ord4<-sort(DBB[,3])
 M3b[,b]<-ord3
 M4b[,b]<-ord4
-k1bU[,b]<-k1b[ordU,]
-k1bV[,b]<-k1b[ordV,]
+k1bU[,b]<-k1b[ordU]
+k1bV[,b]<-k1b[ordV]
 
 
 
@@ -711,9 +958,18 @@ upperV<-M_fV_sort[,floor((1-alpha/2)*B)]
 if(trunc=="left"){
 
 
+
+
+ind<-1:nrow(C)
+indbb<-seq(1,nrow(C),by=1)
+indbb1<-seq(1,nrow(C),by=1)
+
+
+
 W1<-as.vector(f)
 W2<-as.vector(k)
-ind<-1:nrow(C)
+
+
 if (is.na(B)==TRUE) B<-500
 M_IF0<-matrix(0,nrow=nrow(C),ncol=B)
 M_IF01<-matrix(0,nrow=nrow(C),ncol=B)
@@ -725,8 +981,19 @@ M3b<-matrix(0,nrow=nrow(C),ncol=B)
 k1bU<-matrix(0,nrow=nrow(C),ncol=B) 
 
 
+if(B<40){
+cat("Warning. Number of replicates less than 40","\n")
+cat("Confidence bands cannot be computed","\n")
+}
+
+
+
 for(b in 1:B){
-cat("Resample B",b,"\n")
+
+if(b==1) cat("Resample B",b,"\n")
+r<-floor(B/4)*floor(b/floor(B/4))-b
+if(abs(r)==0|b==B) cat("Resample B",b,"\n")
+
 DB<-matrix(0,nrow=nrow(C),ncol=3)
 DB[,1]<-sample(C[,1],size=nrow(C),replace=TRUE,prob=W1)
 indUV<-sample(ind,size=nrow(C),replace=TRUE,prob=W2)
@@ -752,11 +1019,11 @@ DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
 error<-1/(10*nrow(DBB))
 Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
-for (k in 1:nrow(DBB)){
+for (i in 1:nrow(DBB)){
 for(j in 1:nrow(DBB)) {
 a2<-min(DBB[j,2],DBB[j,3])
       b2<-max(DBB[j,2],DBB[j,3])
-if(DBB[k,1]>=a2 & DBB[k,1]<=b2) Jb[k,j]<-1
+if(DBB[i,1]>=a2 & DBB[i,1]<=b2) Jb[i,j]<-1
 }}
 JIb<-t(Jb)
 f0b<-matrix(data=1/nrow(DBB),ncol=1,nrow=nrow(DBB))
@@ -777,14 +1044,31 @@ S0b<-max(abs(f1b-f0b))
 f0b<-f1b
 k0b<-k1b
 }
-FF0b<-matrix(data=0, ncol=1, nrow=nrow(DBB))
-for(i in 1:nrow(DBB)){
-FF0b[i,]<-sum(f1b[1:i,])
+
+ff0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb1<-(C[,1]==C[i,1])
+	pos1<-min(which(indbb1==TRUE))
+	if(pos1==1){
+	ff0b[indbb1]<-sum(f1b[indbb1])}
+	if(pos1>1){
+	ff0b[indbb1]<-sum(f1b[indbb1])
+	}
 }
-Sobb<-matrix(data=0, ncol=1, nrow=nrow(DBB))
-for(j in 1:nrow(DBB)){
-Sobb[j,]<-1-FF0b[j,]+f1b[j,]
+
+
+FF0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb<-(C[,1]==C[i,1])
+	posa<-min(which(indbb==TRUE))
+	if(posa==1){
+	FF0b[indbb]<-sum(f1b[indbb])}
+	if(posa>1){
+	FF0b[indbb]<-sum(f1b[indbb])+FF0b[posa-1]
+	}
 }
+Sobb<-1-FF0b+ff0b
+Sobb[Sobb<1e-12]<-0
 
 M_IF0[,b]<-as.vector(FF0b)
 M_IF01[,b]<-as.vector(f1b)
@@ -795,7 +1079,7 @@ M_IF0Sob[,b]<-as.vector(Sobb)
 ordA<-order(DBB[,2])
 ord3<-sort(DBB[,2])
 M3b[,b]<-ord3
-k1bU[,b]<-k1b[ordU,]
+k1bU[,b]<-k1b[ordU]
 
 
 
@@ -834,11 +1118,6 @@ M_fU_sort[i,]<-sort(M_fU[i,])
 lowerU<-M_fU_sort[,floor(alpha*B/2)]
 upperU<-M_fU_sort[,floor((1-alpha/2)*B)]
 
-upperV<-rep(NA,length(C))
-lowerV<-rep(NA,length(C))
-
-
-
 
 
 }
@@ -848,9 +1127,16 @@ lowerV<-rep(NA,length(C))
 if(trunc=="right"){
 
 
+ind<-1:nrow(C)
+
+indbb<-seq(1,nrow(C),by=1)
+indbb1<-seq(1,nrow(C),by=1)
+
+
+
 W1<-as.vector(f)
 W2<-as.vector(k)
-ind<-1:nrow(C)
+
 if (is.na(B)==TRUE) B<-500
 M_IF0<-matrix(0,nrow=nrow(C),ncol=B)
 M_IF01<-matrix(0,nrow=nrow(C),ncol=B)
@@ -863,8 +1149,19 @@ M4b<-matrix(0,nrow=nrow(C),ncol=B)
 k1bV<-matrix(0,nrow=nrow(C),ncol=B)
 
 
+if(B<40){
+cat("Warning. Number of replicates less than 40","\n")
+cat("Confidence bands cannot be computed","\n")
+}
+
+
+
 for(b in 1:B){
-cat("Resample B",b,"\n")
+
+if(b==1) cat("Resample B",b,"\n")
+r<-floor(B/4)*floor(b/floor(B/4))-b
+if(abs(r)==0|b==B) cat("Resample B",b,"\n")
+
 DB<-matrix(0,nrow=nrow(C),ncol=3)
 DB[,1]<-sample(C[,1],size=nrow(C),replace=TRUE,prob=W1)
 indUV<-sample(ind,size=nrow(C),replace=TRUE,prob=W2)
@@ -885,6 +1182,8 @@ indlog<-(log1*log2==0)
 
 ordB<-order(DB[,1])
 DBB<-matrix(0,nrow=nrow(C),ncol=3)
+DBBB<-matrix(0,nrow=nrow(C),ncol=3)
+
 DBB[,1]<-sort(DB[,1])
 DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
@@ -915,26 +1214,48 @@ S0b<-max(abs(f1b-f0b))
 f0b<-f1b
 k0b<-k1b
 }
-FF0b<-matrix(data=0, ncol=1, nrow=nrow(DBB))
-for(i in 1:nrow(DBB)){
-FF0b[i,]<-sum(f1b[1:i,])
+
+
+ff0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb1<-(C[,1]==C[i,1])
+	pos1<-min(which(indbb1==TRUE))
+	if(pos1==1){
+	ff0b[indbb1]<-sum(f1b[indbb1])}
+	if(pos1>1){
+	ff0b[indbb1]<-sum(f1b[indbb1])
+	}
 }
-Sobb<-matrix(data=0, ncol=1, nrow=nrow(DBB))
-for(j in 1:nrow(DBB)){
-Sobb[j,]<-1-FF0b[j,]+f1b[j,]
+
+
+FF0b<-numeric(nrow(C))
+for(i in 1:nrow(C)){
+	indbb<-(C[,1]==C[i,1])
+	posw<-min(which(indbb==TRUE))
+	if(posw==1){
+	FF0b[indbb]<-sum(f1b[indbb])}
+	if(posw>1){
+	FF0b[indbb]<-sum(f1b[indbb])+FF0b[posw-1]
+	}
 }
+
+
+Sobb<-1-FF0b+ff0b
+Sobb[Sobb<1e-12]<-0
+Sobb[Sobb<1e-12]<-0
+FF0b[FF0b<1e-12]<-0
+
 
 M_IF0[,b]<-as.vector(FF0b)
 M_IF01[,b]<-as.vector(f1b)
 M_IF0Sob[,b]<-as.vector(Sobb)
 
 
-
 ordB<-order(DBB[,3])
 ord4<-sort(DBB[,3])
-M4b[,b]<-ord4
-k1bV[,b]<-k1b[ordV,]
 
+M4b[,b]<-ord4
+k1bV[,b]<-k1b[ordV]
 
 
 for (i in 1:nrow(C)){
@@ -969,53 +1290,288 @@ M_fV_sort[i,]<-sort(M_fV[i,])
 lowerV<-M_fV_sort[,floor(alpha*B/2)]
 upperV<-M_fV_sort[,floor((1-alpha/2)*B)]
 
-upperU<-rep(NA,length(C))
-lowerU<-rep(NA,length(C))
-
 
 }
 
 }
-
+}
+if (boot==TRUE){
 
 if(trunc=="both"){
 
 if((display.FS==TRUE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(2,2))
-plot(C[,1],FF,xlab="Time of interest",ylab="",main="Shen estimator",lty=1,type="l")
- lines(C[,1],upperF,lty=3)
- lines(C[,1],lowerF,lty=3)
-plot(C[,1],Sob,type="l",xlab="Time of interest",ylab="",main="Survival",lty=1)
- lines(C[,1],upperS,lty=3)
- lines(C[,1],lowerS,lty=3)
-plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperU,lty=3)
-lines(C[,1],lowerU,lty=3)
-plot(C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperV,lty=3)
- lines(C[,1],lowerV,lty=3)
+
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],upperF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperF[i],C[i+1,1],upperF[i], lty=3)
+segments(C[i+1,1],upperF[i],C[i+1,1],upperF[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],lowerF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerF[i],C[i+1,1],lowerF[i], lty=3)
+segments(C[i+1,1],lowerF[i],C[i+1,1],lowerF[i+1],lty=3)
+}
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(upperS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperS[i],C[i+1,1],upperS[i], lty=3)
+segments(C[i+1,1],upperS[i],C[i+1,1],upperS[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(lowerS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerS[i],C[i+1,1],lowerS[i], lty=3)
+segments(C[i+1,1],lowerS[i],C[i+1,1],lowerS[i+1],lty=3)
+}
+
+
+
+
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
+}
+
+CC<-sort(C[,2])
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],upperU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],upperU[i],CC[i+1],upperU[i], lty=3)
+segments(CC[i+1],upperU[i],CC[i+1],upperU[i+1],lty=3)
+}
+
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],lowerU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],lowerU[i],CC[i+1],lowerU[i], lty=3)
+segments(CC[i+1],lowerU[i],CC[i+1],lowerU[i+1],lty=3)
+}
+
+
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
+
+
+CCC<-sort(C[,3])
+
+segments(min(C[,3])-(max(C[,3])-min(C[,3]))/length(C[,3]),0,sort(C[,3])[1],0,lty=3)
+segments(max(C[,3]),1,max(C[,3])+(max(C[,3])-min(C[,3]))/length(C[,3]),1,lty=3)
+segments(sort(C[,3])[1],0,sort(C[,3])[1],upperV[1], lty=3)
+
+for(i in 1:(length(C[,3])-1)){
+segments(CCC[i],upperV[i],CCC[i+1],upperV[i], lty=3)
+segments(CCC[i+1],upperV[i],CCC[i+1],upperV[i+1],lty=3)
+}
+
+
+segments(min(C[,3])-(max(C[,3])-min(C[,3]))/length(C[,3]),0,sort(C[,3])[1],0,lty=3)
+segments(max(C[,3]),1,max(C[,3])+(max(C[,3])-min(C[,3]))/length(C[,3]),1,lty=3)
+segments(sort(C[,3])[1],0,sort(C[,3])[1],lowerV[1], lty=3)
+
+for(i in 1:(length(C[,3])-1)){
+segments(CCC[i],lowerV[i],CCC[i+1],lowerV[i], lty=3)
+segments(CCC[i+1],lowerV[i],CCC[i+1],lowerV[i+1],lty=3)
+}
+
 }
 
 if((display.FS==FALSE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperU,lty=3)
- lines(C[,1],lowerU,lty=3)
-plot(C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperV,lty=3)
- lines(C[,1],lowerV,lty=3)
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
+}
+
+CC<-sort(C[,2])
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],upperU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],upperU[i],CC[i+1],upperU[i], lty=3)
+segments(CC[i+1],upperU[i],CC[i+1],upperU[i+1],lty=3)
+}
+
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],lowerU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],lowerU[i],CC[i+1],lowerU[i], lty=3)
+segments(CC[i+1],lowerU[i],CC[i+1],lowerU[i+1],lty=3)
+}
+
+
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
+
+
+CCC<-sort(C[,3])
+
+segments(min(C[,3])-(max(C[,3])-min(C[,3]))/length(C[,3]),0,sort(C[,3])[1],0,lty=3)
+segments(max(C[,3]),1,max(C[,3])+(max(C[,3])-min(C[,3]))/length(C[,3]),1,lty=3)
+segments(sort(C[,3])[1],0,sort(C[,3])[1],upperV[1], lty=3)
+
+for(i in 1:(length(C[,3])-1)){
+segments(CCC[i],upperV[i],CCC[i+1],upperV[i], lty=3)
+segments(CCC[i+1],upperV[i],CCC[i+1],upperV[i+1],lty=3)
+}
+
+
+segments(min(C[,3])-(max(C[,3])-min(C[,3]))/length(C[,3]),0,sort(C[,3])[1],0,lty=3)
+segments(max(C[,3]),1,max(C[,3])+(max(C[,3])-min(C[,3]))/length(C[,3]),1,lty=3)
+segments(sort(C[,3])[1],0,sort(C[,3])[1],lowerV[1], lty=3)
+
+for(i in 1:(length(C[,3])-1)){
+segments(CCC[i],lowerV[i],CCC[i+1],lowerV[i], lty=3)
+segments(CCC[i+1],lowerV[i],CCC[i+1],lowerV[i+1],lty=3)
+}
 }
 if((display.FS==TRUE)&(display.UV==FALSE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(C[,1],FF,main="Shen estimator",xlab="Time of interest",ylab="",lty=1,type="l")
- lines(C[,1],upperF,lty=3)
- lines(C[,1],lowerF,lty=3)
-plot(C[,1],Sob,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperS,lty=3)
- lines(C[,1],lowerS,lty=3)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],upperF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperF[i],C[i+1,1],upperF[i], lty=3)
+segments(C[i+1,1],upperF[i],C[i+1,1],upperF[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],lowerF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerF[i],C[i+1,1],lowerF[i], lty=3)
+segments(C[i+1,1],lowerF[i],C[i+1,1],lowerF[i+1],lty=3)
+}
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(upperS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperS[i],C[i+1,1],upperS[i], lty=3)
+segments(C[i+1,1],upperS[i],C[i+1,1],upperS[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(lowerS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerS[i],C[i+1,1],lowerS[i], lty=3)
+segments(C[i+1,1],lowerS[i],C[i+1,1],lowerS[i+1],lty=3)
+}
+
 }
 
 
@@ -1031,33 +1587,211 @@ if(trunc=="left"){
 if((display.FS==TRUE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(2,2))
-plot(C[,1],FF,xlab="Time of interest",ylab="",main="Shen estimator",lty=1,type="l")
- lines(C[,1],upperF,lty=3)
- lines(C[,1],lowerF,lty=3)
-plot(C[,1],Sob,type="l",xlab="Time of interest",ylab="",main="Survival",lty=1)
- lines(C[,1],upperS,lty=3)
- lines(C[,1],lowerS,lty=3)
-plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperU,lty=3)
-lines(C[,1],lowerU,lty=3)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],upperF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperF[i],C[i+1,1],upperF[i], lty=3)
+segments(C[i+1,1],upperF[i],C[i+1,1],upperF[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],lowerF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerF[i],C[i+1,1],lowerF[i], lty=3)
+segments(C[i+1,1],lowerF[i],C[i+1,1],lowerF[i+1],lty=3)
+}
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(upperS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperS[i],C[i+1,1],upperS[i], lty=3)
+segments(C[i+1,1],upperS[i],C[i+1,1],upperS[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(lowerS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerS[i],C[i+1,1],lowerS[i], lty=3)
+segments(C[i+1,1],lowerS[i],C[i+1,1],lowerS[i+1],lty=3)
+}
+
+
+
+
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
+}
+
+CC<-sort(C[,2])
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],upperU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],upperU[i],CC[i+1],upperU[i], lty=3)
+segments(CC[i+1],upperU[i],CC[i+1],upperU[i+1],lty=3)
+}
+
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],lowerU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],lowerU[i],CC[i+1],lowerU[i], lty=3)
+segments(CC[i+1],lowerU[i],CC[i+1],lowerU[i+1],lty=3)
+}
+
+
 }
 
 if((display.FS==FALSE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(1,1))
-plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperU,lty=3)
- lines(C[,1],lowerU,lty=3)
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
 }
+
+CC<-sort(C[,2])
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],upperU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],upperU[i],CC[i+1],upperU[i], lty=3)
+segments(CC[i+1],upperU[i],CC[i+1],upperU[i+1],lty=3)
+}
+
+
+segments(min(C[,2])-(max(C[,2])-min(C[,2]))/length(C[,2]),0,sort(C[,2])[1],0,lty=3)
+segments(max(C[,2]),1,max(C[,2])+(max(C[,2])-min(C[,2]))/length(C[,2]),1,lty=3)
+segments(sort(C[,2])[1],0,sort(C[,2])[1],lowerU[1], lty=3)
+
+for(i in 1:(length(C[,2])-1)){
+segments(CC[i],lowerU[i],CC[i+1],lowerU[i], lty=3)
+segments(CC[i+1],lowerU[i],CC[i+1],lowerU[i+1],lty=3)
+}
+
+
+}
+
 if((display.FS==TRUE)&(display.UV==FALSE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(C[,1],FF,main="Shen estimator",xlab="Time of interest",ylab="",lty=1,type="l")
- lines(C[,1],upperF,lty=3)
- lines(C[,1],lowerF,lty=3)
-plot(C[,1],Sob,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
- lines(C[,1],upperS,lty=3)
- lines(C[,1],lowerS,lty=3)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],upperF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperF[i],C[i+1,1],upperF[i], lty=3)
+segments(C[i+1,1],upperF[i],C[i+1,1],upperF[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],lowerF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerF[i],C[i+1,1],lowerF[i], lty=3)
+segments(C[i+1,1],lowerF[i],C[i+1,1],lowerF[i+1],lty=3)
+}
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(upperS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],upperS[i],C[i+1,1],upperS[i], lty=3)
+segments(C[i+1,1],upperS[i],C[i+1,1],upperS[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(lowerS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[i,1],lowerS[i],C[i+1,1],lowerS[i], lty=3)
+segments(C[i+1,1],lowerS[i],C[i+1,1],lowerS[i+1],lty=3)
+}
+
 }
 
 
@@ -1072,30 +1806,206 @@ if(trunc=="right"){
 
 if((display.FS==TRUE)&(display.UV==TRUE)){
 dev.new()
-par(mfrow=c(1,2))
-plot(-C[,1],FF,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
- lines(-C[,1],upperF,lty=3)
- lines(-C[,1],lowerF,lty=3)
-plot(-C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
- lines(-C[,1],upperV,lty=3)
- lines(-C[,1],lowerV,lty=3)
+par(mfrow=c(2,2))
+
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],upperF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],upperF[i],C[,1][i+1],upperF[i], lty=3)
+segments(C[,1][i+1],upperF[i],C[,1][i+1],upperF[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],lowerF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],lowerF[i],C[,1][i+1],lowerF[i], lty=3)
+segments(C[,1][i+1],lowerF[i],C[,1][i+1],lowerF[i+1],lty=3)
+}
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(upperS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],upperS[i],C[,1][i+1],upperS[i], lty=3)
+segments(C[,1][i+1],upperS[i],C[,1][i+1],upperS[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(lowerS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],lowerS[i],C[,1][i+1],lowerS[i], lty=3)
+segments(C[,1][i+1],lowerS[i],C[,1][i+1],lowerS[i+1],lty=3)
+}
+
+
+
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
+
+segments(min(V)-(max(V)-min(V))/length(V),0,sort(V)[1],0,lty=3)
+segments(max(V),1,max(V)+(max(V)-min(V))/length(V),1,lty=3)
+segments(sort(V)[1],0,sort(V)[1],upperV[1], lty=3)
+
+CCCC<-sort(V)
+
+for(i in 1:(length(V)-1)){
+segments(CCCC[i],upperV[i],CCCC[i+1],upperV[i], lty=3)
+segments(CCCC[i+1],upperV[i],CCCC[i+1],upperV[i+1],lty=3)
+}
+
+
+segments(min(V)-(max(V)-min(V))/length(V),0,CCCC[1],0,lty=3)
+segments(max(V),1,max(V)+(max(V)-min(V))/length(V),1,lty=3)
+segments(CCCC[1],0,CCCC[1],lowerV[1], lty=3)
+
+for(i in 1:(length(V)-1)){
+segments(CCCC[i],lowerV[i],CCCC[i+1],lowerV[i], lty=3)
+segments(CCCC[i+1],lowerV[i],CCCC[i+1],lowerV[i+1],lty=3)
+}
+
 
 }
 
 if((display.FS==FALSE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(1,1))
-plot(-C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
- lines(-C[,1],upperV,lty=3)
- lines(-C[,1],lowerV,lty=3)
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
+
+segments(min(V)-(max(V)-min(V))/length(V),0,sort(V)[1],0,lty=3)
+segments(max(V),1,max(V)+(max(V)-min(V))/length(V),1,lty=3)
+segments(sort(V)[1],0,sort(V)[1],upperV[1], lty=3)
+
+CCCC<-sort(V)
+
+for(i in 1:(length(V)-1)){
+segments(CCCC[i],upperV[i],CCCC[i+1],upperV[i], lty=3)
+segments(CCCC[i+1],upperV[i],CCCC[i+1],upperV[i+1],lty=3)
+}
+
+
+segments(min(V)-(max(V)-min(V))/length(V),0,CCCC[1],0,lty=3)
+segments(max(V),1,max(V)+(max(V)-min(V))/length(V),1,lty=3)
+segments(CCCC[1],0,CCCC[1],lowerV[1], lty=3)
+
+for(i in 1:(length(V)-1)){
+segments(CCCC[i],lowerV[i],CCCC[i+1],lowerV[i], lty=3)
+segments(CCCC[i+1],lowerV[i],CCCC[i+1],lowerV[i+1],lty=3)
+}
+
 
 }
 if((display.FS==TRUE)&(display.UV==FALSE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(-C[,1],FF,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
- lines(-C[,1],upperF,lty=3)
- lines(-C[,1],lowerF,lty=3)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],upperF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],upperF[i],C[,1][i+1],upperF[i], lty=3)
+segments(C[,1][i+1],upperF[i],C[,1][i+1],upperF[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),0,C[,1][1],0,lty=3)
+segments(max(C[,1]),1,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),1,lty=3)
+segments(C[,1][1],0,C[,1][1],lowerF[1], lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],lowerF[i],C[,1][i+1],lowerF[i], lty=3)
+segments(C[,1][i+1],lowerF[i],C[,1][i+1],lowerF[i+1],lty=3)
+}
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(upperS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],upperS[i],C[,1][i+1],upperS[i], lty=3)
+segments(C[,1][i+1],upperS[i],C[,1][i+1],upperS[i+1],lty=3)
+}
+
+
+segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
+segments(max(C[,1]),0,max(C[,1])+(max(C[,1])-min(C[,1]))/length(C[,1]),0,lty=3)
+segments(max(C[,1]),0,max(C[,1]),min(lowerS), lty=3)
+
+for(i in 1:(length(C[,1])-1)){
+segments(C[,1][i],lowerS[i],C[,1][i+1],lowerS[i], lty=3)
+segments(C[,1][i+1],lowerS[i],C[,1][i+1],lowerS[i+1],lty=3)
+}
 
 }
 
@@ -1103,29 +2013,21 @@ if((display.FS==FALSE)&(display.UV==FALSE)){
 
 }
 }
-}
 
-if (boot==FALSE){
-upperF<-rep(NA,length(C))
-lowerF<-rep(NA,length(C))
-upperS<-rep(NA,length(C))
-lowerS<-rep(NA,length(C))
-upperU<-rep(NA,length(C))
-lowerU<-rep(NA,length(C))
-upperV<-rep(NA,length(C))
-lowerV<-rep(NA,length(C))
+}
+if (boot==FALSE|B<40){
 
 if(trunc=="both"){
 
 if(plot.joint==TRUE){
 if(plot.type=="image"){
-image(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution")
-filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
-filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+image(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
 }
 if(plot.type=="persp"){
 fcol<-topo.colors(10)[cut(KK[2:nrow(C),2:nrow(C)],10,include.lowest=TRUE)]
-                   persp(x=sort(U),y=sort(V),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+                   persp(x=sort(U+runif(length(U),0,0.00001)),y=sort(V+runif(length(U),0,0.00001)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
 
 }
 
@@ -1139,23 +2041,112 @@ if(plot.joint==FALSE){
 if((display.FS==TRUE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(2,2))
-plot(C[,1],FF,xlab="Time of interest",ylab="",main="Shen estimator",lty=1,type="l")
- plot(C[,1],Sob,type="l",xlab="Time of interest",ylab="",main="Survival",lty=1)
- plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
- plot(C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
+}
+
+
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
+
  }
 
 if((display.FS==FALSE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
- plot(C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
+}
+
+
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
+
  }
+
 if((display.FS==TRUE)&(display.UV==FALSE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(C[,1],FF,main="Shen estimator",xlab="Time of interest",ylab="",lty=1,type="l")
- plot(C[,1],Sob,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
  }
 
 
@@ -1171,21 +2162,88 @@ if(trunc=="left"){
 if((display.FS==TRUE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(2,2))
-plot(C[,1],FF,xlab="Time of interest",ylab="",main="Shen estimator",lty=1,type="l")
- plot(C[,1],Sob,type="l",xlab="Time of interest",ylab="",main="Survival",lty=1)
- plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
+}
+
  }
 
 if((display.FS==FALSE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(1,1))
-plot(C[,1],fU,type="l",main="Marginal U",xlab="Time of interest",ylab="",lty=1)
+plot(UU,fU,ylim=c(0,1),xlim=c(min(UU)-(max(UU)-min(UU))/length(UU),max(UU)+(max(UU)-min(UU))/length(UU)),type="n",main="Marginal U", xlab="U",ylab="")
+
+segments(min(UU)-(max(UU)-min(UU))/length(UU),0,UU[1],0)
+segments(max(UU),1,max(UU)+(max(UU)-min(UU))/length(UU),1)
+segments(UU[1],0,UU[1],fU[1])
+
+for(i in 1:(length(UU)-1)){
+segments(UU[i],fU[i],UU[i+1],fU[i])
+segments(UU[i+1],fU[i],UU[i+1],fU[i+1])
+}
  }
+
 if((display.FS==TRUE)&(display.UV==FALSE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(C[,1],FF,main="Shen estimator",xlab="Time of interest",ylab="",lty=1,type="l")
- plot(C[,1],Sob,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
  }
 
 
@@ -1200,22 +2258,85 @@ if(trunc=="right"){
 
 if((display.FS==TRUE)&(display.UV==TRUE)){
 dev.new()
-par(mfrow=c(1,2))
-plot(-C[,1],FF,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
- plot(-C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
+par(mfrow=c(2,2))
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
+
+
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
  
 }
 
 if((display.FS==FALSE)&(display.UV==TRUE)){
 dev.new()
 par(mfrow=c(1,1))
-plot(-C[,1],fV,type="l",main="Marginal V",xlab="Time of interest",ylab="",lty=1)
- 
+plot(VV,fV,ylim=c(0,1),xlim=c(min(VV)-(max(VV)-min(VV))/length(VV),max(VV)+(max(VV)-min(VV))/length(VV)),type="n",main="Marginal V", xlab="V",ylab="")
+
+segments(min(VV)-(max(VV)-min(VV))/length(VV),0,VV[1],0)
+segments(max(VV),1,max(VV)+(max(VV)-min(VV))/length(VV),1)
+segments(VV[1],0,VV[1],fV[1])
+
+for(i in 1:(length(VV)-1)){
+segments(VV[i],fV[i],VV[i+1],fV[i])
+segments(VV[i+1],fV[i],VV[i+1],fV[i+1])
+}
 }
 if((display.FS==TRUE)&(display.UV==FALSE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(-C[,1],FF,type="l",main="Survival",xlab="Time of interest",ylab="",lty=1)
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
+segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
+segments(x[1],0,x[1],FF[1])
+
+for(i in 1:(length(x)-1)){
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
+}
+
+
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+
+segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
+segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
+segments(max(x),0,max(x),min(Sob))
+
+
+for(i in 1:(length(x)-1)){
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+}
  
 }
 
@@ -1227,9 +2348,69 @@ if((display.FS==FALSE)&(display.UV==FALSE)){
 
 }
 
-return(list(density=f,cumulative.df=FF,truncation.probs=F0,S0=S0,survival=Sob,density.joint=kMU[,2],
-marginal.U=fU,marginal.V=fV,cummulative.joint=KK,
-n.iterations=iter,Boot=boot.type,B=B,alpha=alpha,upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,lower.Sob=lowerS,
-upper.fU=upperU,lower.fU=lowerU,upper.fV=upperV,lower.fV=lowerV))
+
+cat("n.iterations",iter,"\n")
+cat("S0",S0,"\n")
+cat("events",events,"\n")
+
+if(boot==TRUE){
+
+ cat("B",B,"\n")
+ cat("alpha",alpha,"\n")
+cat("Boot",boot.type,"\n")
+
+summary<-cbind("time"=x,"n.event"=mult,"density"=Fval,"cumulative.df"=FF,"survival"=Sob)
+
+colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival")
+rownames(summary)<-rep("",times=length(x))
+print(summary,digits=5, justify="left")
+
+if(trunc=="both"){
+return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
+Sob, truncation.probs=as.vector(F0), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
+lower.Sob=lowerS, density.joint=as.vector(FKval),marginal.U=fU, marginal.V=fV, upper.fU=upperU, lower.fU=lowerU,upper.fV=upperV, lower.fV=lowerV,cumulative.joint=KK )))
+
 }
 
+if(trunc=="left"){
+return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
+Sob, truncation.probs=as.vector(F0), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
+lower.Sob=lowerS, density.joint=as.vector(ku),marginal.U=fU,upper.fU=upperU, lower.fU=lowerU)))
+}
+if(trunc=="right"){
+
+return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
+Sob, truncation.probs=as.vector(F0), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
+lower.Sob=lowerS, density.joint=as.vector(kv), marginal.V=fV, upper.fV=upperV, lower.fV=lowerV )))
+
+}
+}
+
+if(boot==FALSE){
+ 
+summary<-cbind("time"=x,"n.event"=mult,"density"=as.vector(Fval),"cumulative.df"=FF,"survival"=Sob)
+
+colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival")
+rownames(summary)<-rep("",times=length(x))
+print(summary,digits=5, justify="left")
+
+
+if(trunc=="both"){
+return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
+Sob, truncation.probs=as.vector(F0), density.joint=as.vector(FKval),marginal.U=fU, marginal.V=fV, cumulative.joint=KK )))
+
+}
+
+if(trunc=="left"){
+return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
+Sob, truncation.probs=as.vector(F0), density.joint=as.vector(k), marginal.U=fU)))
+}
+if(trunc=="right"){
+
+return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
+Sob, truncation.probs=as.vector(F0), density.joint=as.vector(k), marginal.V=fV )))
+
+}
+
+}
+}

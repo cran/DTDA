@@ -19,7 +19,7 @@ efron.petrosian(X, U = NA, V = NA, wt = NA, error = NA,
   \item{wt}{ Numeric vector of non-negative initial solution, with the same length as \code{X}. Default value is set to 1/n, being n the length of \code{X}. }
   \item{error}{ Numeric value. Maximum distance among the densities computed in two successive steps. If this is missing, it is set to 10\% of 1/n. }
   \item{nmaxit}{ Numeric value. Maximum number of iterations. If this is missing, it is set to \code{nmaxit} =100 . }
-  \item{boot}{ Logical. If TRUE (default), the simple bootstrap method is applied to lifetime and truncation times distributions estimation.
+  \item{boot}{ Logical. If TRUE (default), the simple bootstrap method is applied to lifetime distribution estimation.
  Pointwise confidence bands are provided. }
   \item{B}{ Numeric value. Number of bootstrap resamples . The default \code{NA} is equivalent to \code{B} =500 . }
   \item{alpha}{ Numeric value. (1-\code{alpha}) is the nominal coverage for the pointwise confidence intervals. }
@@ -28,7 +28,7 @@ efron.petrosian(X, U = NA, V = NA, wt = NA, error = NA,
 
 }
 \details{
-  The NPMLE of the lifetime is computed by the first algorithm proposed in Efron and Petrosian (1999). This is an alternative algorithm which converges to the 
+  The NPMLE of the lifetime is computed by the first algorithm proposed in \cite{Efron and Petrosian (1999)}. This is an alternative algorithm which converges to the 
 NMPLE after a number of iterations.
 If the second (respectively third) argument is missing, computation of the Lynden-Bell estimator for right-truncated (respectively left-truncated)
  data is obtained.
@@ -38,13 +38,15 @@ Note that individuals with NAs in the three first arguments will be automaticall
 \value{
 A list containing the following values:
 
+  \item{time }{The timepoint on the curve. }
+  \item{n.event }{The number of events that ocurred at time \code{t}. }
+  \item{events}{The total number of events. }	
   \item{density }{The estimated density values. }
   \item{cumulative.df }{The estimated cumulative distribution values. }
   \item{truncation.probs }{The probabilities of truncation values, in each region. }
   \item{S0 }{ \code{error} reached in the algorithm. }
   \item{Survival }{The estimated survival values. }
   \item{n.iterations }{The number of iterations used by this algorithm. }
-  \item{Boot }{The type of bootstrap method applied. }
   \item{B }{Number of bootstrap resamples computed. }
   \item{alpha }{The nominal level used to construct the confidence intervals. }
   \item{upper.df }{The estimated upper limits of the confidence intervals for F. }
@@ -53,11 +55,11 @@ A list containing the following values:
   \item{lower.Sob }{The estimated lower limits of the confidence intervals for S. }
 
 }
-\references{ Efron, B. and Petrosian, V.(1999) Nonparametric methods for doubly truncated data. Journal of the American Statistical Association, 94, 824-834.
+\references{ Efron, B. and Petrosian, V.(1999) Nonparametric methods for doubly truncated data. \emph{Journal of the American Statistical Association} \bold{94}, 824-834.
 
-Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. Monograph National Royal Astronomical Society, 155, 95-118.}
+Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.}
 
-\author{ Carla Moreira, Jacobo de U\~na-\'Alvarez and Rosa Crujeiras }
+\author{ Carla Moreira, Jacobo de U\eqn{\mbox{\textasciitilde}}{~}na- \eqn{\mbox{\textasciitilde}}{'}Alvarez and Rosa Crujeiras }
 
 \seealso{\code{\link{lynden}} }
 \examples{

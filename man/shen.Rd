@@ -44,6 +44,9 @@ Note that individuals with NAs in the three first arguments will be automaticall
 \value{
 A list containing the following values:
 
+ \item{time }{The timepoint on the curve. }
+  \item{n.event }{The number of events that ocurred at time \code{t}. }
+  \item{events}{The total number of events. }	
  \item{density }{The estimated density values associated to \code{X}. }
   \item{cumulative.df }{The estimated cumulative distribution values of \code{X}. }
  \item{truncation.probs }{The probabilities of truncation values, in each region. }
@@ -67,13 +70,14 @@ A list containing the following values:
  \item{lower.fV }{The estimated lower limits of the confidence intervals for \code{fV}. }
 
 }
-\references{ Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. Monograph National Royal Astronomical Society, 155, 95-118.
+\references{ Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.
+Astronomical Society, 155, 95-118.
 
-Shen, P-S. (2008) Nonparametric analysis of doubly truncated data. Annals of the Institute of Statistical Mathematics, DOI 10.1007/s10463-008-0192-2.
+Shen, P-S. (2008) Nonparametric analysis of doubly truncated data. \emph{Annals of the Institute of Statistical Mathematics} DOI 10.1007/s10463-008-0192-2.
 
 }
 
-\author{ Carla Moreira, Jacobo de U\~na-\'Alvarez and Rosa Crujeiras }
+\author{ Carla Moreira, Jacobo de U\eqn{\mbox{\textasciitilde}}{~}na- \eqn{\mbox{\textasciitilde}}{'}Alvarez and Rosa Crujeiras }
 
 \seealso{\code{\link{lynden}} }
 \examples{
