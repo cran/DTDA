@@ -121,10 +121,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for (b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
-
 indb<-sample(ind,nrow(C),replace=TRUE)
 M1b<-C[indb,]
 M2b<-matrix(0,nrow=nrow(M1b),ncol=ncol(M1b))
@@ -206,10 +202,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for (b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
-
 indb<-sample(ind,nrow(C),replace=TRUE)
 M1b<-C[indb,]
 M2b<-matrix(0,nrow=nrow(M1b),ncol=ncol(M1b))
@@ -267,7 +259,6 @@ for(i in 1:nrow(C)){
 
 
 Sobb<-1-FF0b+fb
-Sobb[Sobb<1e-12]<-0
 Sobb[Sobb<1e-12]<-0
 FF0b[FF0b<1e-12]<-0
 

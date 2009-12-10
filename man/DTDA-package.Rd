@@ -1,3 +1,4 @@
+\encoding{latin1}
 \name{DTDA-package}
 \alias{DTDA-package}
 \alias{DTDA}
@@ -15,8 +16,8 @@ Plots of cumulative distributions and survival functions are provided.
 \tabular{ll}{
 Package: \tab DTDA\cr
 Type: \tab Package\cr
-Version: \tab 1.2-0\cr
-Date: \tab 2009-07-02\cr
+Version: \tab 1.2-1\cr
+Date: \tab 2009-12-10\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
@@ -24,7 +25,7 @@ Missing data are allowed. Registries with missing data are simply removed. This 
 
 For a complete list of functions, use \code{library(help="DTDA").} }
 \author{
-Carla Moreira, Jacobo de U\eqn{\mbox{\textasciitilde}}{~}na- \eqn{\mbox{\textasciitilde}}{'}Alvarez and Rosa Crujeiras
+Carla Moreira, Jacobo de Uña-Álvarez and Rosa Crujeiras
 
 Maintainer: Carla Moreira \email{carlamgmm@gmail.com}
 }

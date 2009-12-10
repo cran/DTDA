@@ -1,3 +1,4 @@
+\encoding{latin1}
 \name{efron.petrosian}
 \alias{efron.petrosian}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -59,7 +60,7 @@ A list containing the following values:
 
 Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.}
 
-\author{ Carla Moreira, Jacobo de U\eqn{\mbox{\textasciitilde}}{~}na- \eqn{\mbox{\textasciitilde}}{'}Alvarez and Rosa Crujeiras }
+\author{ Carla Moreira, Jacobo de Uña-Álvarez and Rosa Crujeiras }
 
 \seealso{\code{\link{lynden}} }
 \examples{

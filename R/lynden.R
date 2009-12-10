@@ -233,10 +233,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for (b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
-
 indb<-sample(ind,nrow(C),replace=TRUE)
 M1b<-C[indb,]
 M2b<-matrix(0,nrow=nrow(M1b),ncol=ncol(M1b))
@@ -384,10 +380,6 @@ cat("Confidence bands cannot be computed","\n")
 
 
 for (b in 1:B){
-
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
 
 
 indb<-sample(ind,nrow(C),replace=TRUE)
@@ -1033,7 +1025,7 @@ summary<-cbind("time"=x,"n.event"=mult4,"density"=f,"cumulative.df"=FF,"survival
 colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival", "hazard")
 rownames(summary)<-rep("",times=length(x))
 print(summary,digits=5, justify="left")
-return(invisible(list(n.iterations=iter, B=B, alpha=alpha,time=x, n.event=mult4, density=as.vector(f), cumulative.df=FF, survival=
+return(invisible(list(n.iterations=iter, events=events, B=B, alpha=alpha,time=x, n.event=mult4, density=as.vector(f), cumulative.df=FF, survival=
 as.vector(Sob), truncation.probs=as.vector(F0), hazard=as.vector(h), NJ=as.vector(NJ), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
 lower.Sob=lowerS)))
 

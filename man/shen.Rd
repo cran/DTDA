@@ -1,3 +1,4 @@
+\encoding{latin1}
 \name{shen}
 \alias{shen}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -45,10 +46,10 @@ Note that individuals with NAs in the three first arguments will be automaticall
 A list containing the following values:
 
  \item{time }{The timepoint on the curve. }
-  \item{n.event }{The number of events that ocurred at time \code{t}. }
-  \item{events}{The total number of events. }	
+ \item{n.event }{The number of events that ocurred at time \code{t}. }
+ \item{events}{The total number of events. }	
  \item{density }{The estimated density values associated to \code{X}. }
-  \item{cumulative.df }{The estimated cumulative distribution values of \code{X}. }
+ \item{cumulative.df }{The estimated cumulative distribution values of \code{X}. }
  \item{truncation.probs }{The probabilities of truncation values, in each region. }
  \item{S0 }{ \code{error} reached in the algorithm. }
  \item{Survival }{The estimated survival values. }
@@ -57,6 +58,7 @@ A list containing the following values:
 \item{marginal.V }{The estimated cumulative univariate marginal values of the \code{V}. }
  \item{cumulative.joint }{The estimated joint cumulative distribution values. }
 \item{n.iterations }{The number of iterations used by this algorithm. }
+\item{biasf}{The estimated probabilities of observing the lifetimes.}
 \item{Boot }{The type of bootstrap method applied. }
 \item{B }{Number of bootstrap resamples computed. }
  \item{alpha }{The nominal level used to construct the confidence intervals. }
@@ -77,7 +79,7 @@ Shen, P-S. (2008) Nonparametric analysis of doubly truncated data. \emph{Annals 
 
 }
 
-\author{ Carla Moreira, Jacobo de U\eqn{\mbox{\textasciitilde}}{~}na- \eqn{\mbox{\textasciitilde}}{'}Alvarez and Rosa Crujeiras }
+\author{ Carla Moreira, Jacobo de Uña-Álvarez and Rosa Crujeiras }
 
 \seealso{\code{\link{lynden}} }
 \examples{

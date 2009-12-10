@@ -52,6 +52,7 @@ D[,3]<-D[,3]
 
 ord<-order(D[,1])
 C<-matrix(0,nrow=nrow(D),ncol=ncol(D))
+EE<-matrix(0,nrow=nrow(D),ncol=ncol(D))
 C[,1]<-sort(D[,1])
 C[,2:ncol(D)]<-D[ord,2:ncol(D)]
 
@@ -184,9 +185,9 @@ for(i in 1:nrow(C)){
 	indbbv<-(kMV[,1]==kMV[i,1])
 	posv<-min(which(indbbv==TRUE))
 	if(posv==1){
-	kk0v[indbbv]<-sum(kMU[,2][indbbv])}
+	kk0v[indbbv]<-sum(kMV[,2][indbbv])}
 	if(posv>1){
-	kk0v[indbbv]<-sum(kMU[,2][indbbv])
+	kk0v[indbbv]<-sum(kMV[,2][indbbv])
 	}
 }
 
@@ -201,9 +202,31 @@ multv <- tabulate(match(kMV[,1],unique(kMV[,1])))
 VV<-unique(kMV[,1])
 fV<-cumsum(fVval)
 
+ordUV<-order(kMUV[,1])
+EE[,1]<-X[ordUV]
+
+
+KKG<-matrix(data=0, ncol=1, nrow=nrow(EE))
+for (i in 1:nrow(EE)){
+for (j in 1:nrow(EE)){
+if(EE[i,1]>=kMUV[j,1]& EE[i,1]<=kMUV[j,2])
+KKG[i,]<-KKG[i,]+kMUV[j,3]
+}}
+
+multG <- tabulate(match(EE[,1],unique(EE[,1])))
+	if(sum(multG)==length(unique(EE[,1]))){   
+		fGval <- (KKG)}
+	if(sum(multG)>length(unique(EE[,1]))){
+		weigthG<-KKG[!duplicated(EE[,1])]
+		fGval<- (weigthG)}
+
+
+ordc<-order(unique(EE[,1]))
+biasf<-fGval[ordc]
+
+
 
 KK<-matrix(data=0, ncol=nrow(C), nrow=nrow(C))
-cat("Computing joint distribution","\n")
 for (i in 1:nrow(C)){
 for (j in 1:nrow(C)){
 for (l in 1:nrow(C)){
@@ -214,15 +237,58 @@ KK[i,j]<-KK[i,j]+kMUV[l,3]
 
 if(plot.joint==TRUE){
 if(plot.type=="image"){
-image(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution")
-filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
-filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+sU<-sort(U)
+sV<-sort(V)
+if(any(diff(sU)==0)& all(diff(sV)!=0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+image(sort(U+runif(length(U),0,stepU)),sort(V),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
 }
+
+if(all(diff(sU)!=0)& any(diff(sV)==0)){
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+image(sort(U),sort(V+runif(length(U),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+}
+
+if(any(diff(sU)==0)& any(diff(sV)==0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+image(sort(U+runif(length(U),0,stepU)),sort(V+runif(length(U),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+}
+
+if(all(diff(sU)!=0)& all(diff(sV)!=0)){
+image(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+}}
+
 if(plot.type=="persp"){
 fcol<-topo.colors(10)[cut(KK[2:nrow(C),2:nrow(C)],10,include.lowest=TRUE)]
-                   persp(x=sort(U+runif(length(U),0,0.00001)),y=sort(V+runif(length(U),0,0.00001)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
-
+sU<-sort(U)
+sV<-sort(V)
+if(any(diff(sU)==0)& all(diff(sV)!=0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+persp(x=sort(U+runif(length(U),0,stepU)),y=sort(V),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
 }
+if(all(diff(sU)!=0)& any(diff(sV)==0)){
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+persp(x=sort(U),y=sort(V+runif(length(V),0,stepV)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+}
+if(any(diff(sU)==0)& any(diff(sV)==0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+persp(x=sort(U+runif(length(U),0,stepU)),y=sort(V+runif(length(V),0,stepV)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+}
+if(all(diff(sU)!=0)& all(diff(sV)!=0)){
+persp(x=sort(U),y=sort(V),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+}
+}
+
 
 }
 if(plot.joint==FALSE){
@@ -240,6 +306,29 @@ kMU<-cbind(U,k)
 ordU<-order(kMU[,1])
 kMU[,1]<-sort(kMU[,1])
 kMU[,2]<-kMU[ordU,2]
+
+
+
+EE[,1]<-X[ordU]
+
+
+KKG<-matrix(data=0, ncol=1, nrow=nrow(EE))
+for (i in 1:nrow(EE)){
+for (j in 1:nrow(EE)){
+if(EE[i,1]>=kMU[j,1])
+KKG[i,]<-KKG[i,]+kMU[j,2]
+}}
+
+multG <- tabulate(match(EE[,1],unique(EE[,1])))
+	if(sum(multG)==length(unique(EE[,1]))){   
+		fGval <- (KKG)}
+	if(sum(multG)>length(unique(EE[,1]))){
+		weigthG<-KKG[!duplicated(EE[,1])]
+		fGval<- (weigthG)}
+
+
+ordc<-order(unique(EE[,1]))
+biasf<-fGval[ordc]
 
 
 kk0b<-numeric(nrow(kMU))
@@ -284,6 +373,27 @@ kMV[,1]<-sort(kMV[,1])
 kMV[,2]<-kMV[ordV,2]
 
 
+EE[,1]<-X[ordV]
+
+
+KKG<-matrix(data=0, ncol=1, nrow=nrow(EE))
+for (i in 1:nrow(EE)){
+for (j in 1:nrow(EE)){
+if(EE[i,1]<=kMV[j,1])
+KKG[i,]<-KKG[i,]+kMV[j,2]
+}}
+
+multG <- tabulate(match(EE[,1],unique(EE[,1])))
+	if(sum(multG)==length(unique(EE[,1]))){   
+		fGval <- (KKG)}
+	if(sum(multG)>length(unique(EE[,1]))){
+		weigthG<-KKG[!duplicated(EE[,1])]
+		fGval<- (weigthG)}
+
+
+ordc<-order(unique(EE[,1]))
+biasf<-fGval[ordc]
+
 
 kk0b<-numeric(nrow(kMV))
 for(i in 1:nrow(kMV)){
@@ -316,7 +426,6 @@ fV<-cumsum(kv)
 if(boot==TRUE){
 
 if(boot.type=="simple"){
-cat("Simple Bootstrap","\n")
 if (is.na(B)==TRUE) B<-500
 
 if(trunc=="both"){
@@ -350,9 +459,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for (b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
 
 indb<-sample(ind,nrow(C),replace=TRUE)
 M1b<-C[indb,]
@@ -432,8 +538,8 @@ k1bV[,b]<-k1b[ordV]
 for (i in 1:nrow(C)){
 for(j in 1:nrow(C)){
 if(M3b[i,b]<=kMU[j,1])
-            M_fU[j,b]<-sum(k1bU[1:i,b])
-                        }}
+ M_fU[j,b]<-sum(k1bU[1:i,b])
+ }}
 
 for (i in 1:nrow(C)){
 for(j in 1:nrow(C)){
@@ -504,10 +610,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for (b in 1:B){
 
-
-#if(b==1) cat("Resample B",b,"\n")
-#r<-floor(B/4)*floor(b/floor(B/4))-b
-#if(abs(r)==0|b==B) cat("Resample B",b,"\n")
 
 indb<-sample(ind,nrow(C),replace=TRUE)
 
@@ -646,10 +748,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for (b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
-
 indb<-sample(ind,nrow(C),replace=TRUE)
 M1b<-C[indb,]
 ord<-order(M1b[,1])
@@ -768,7 +866,6 @@ upperV<-M_fV_sort[,floor((1-alpha/2)*B)]
 
 
 if(boot.type=="obvious"){
-cat("Obvious Bootstrap","\n")
 
 if (is.na(B)==TRUE) B<-500
 
@@ -803,9 +900,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for(b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
 
 DB<-matrix(0,nrow=nrow(C),ncol=3)
 DB[,1]<-sample(C[,1],size=nrow(C),replace=TRUE,prob=W1)
@@ -990,9 +1084,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for(b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
 
 DB<-matrix(0,nrow=nrow(C),ncol=3)
 DB[,1]<-sample(C[,1],size=nrow(C),replace=TRUE,prob=W1)
@@ -1158,9 +1249,6 @@ cat("Confidence bands cannot be computed","\n")
 
 for(b in 1:B){
 
-if(b==1) cat("Resample B",b,"\n")
-r<-floor(B/4)*floor(b/floor(B/4))-b
-if(abs(r)==0|b==B) cat("Resample B",b,"\n")
 
 DB<-matrix(0,nrow=nrow(C),ncol=3)
 DB[,1]<-sample(C[,1],size=nrow(C),replace=TRUE,prob=W1)
@@ -2016,20 +2104,62 @@ if((display.FS==FALSE)&(display.UV==FALSE)){
 
 }
 if (boot==FALSE|B<40){
-
 if(trunc=="both"){
 
 if(plot.joint==TRUE){
 if(plot.type=="image"){
-image(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution")
-filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
-filled.contour(sort(U+runif(length(U),0,0.00001)),sort(V+runif(length(U),0,0.00001)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+sU<-sort(U)
+sV<-sort(V)
+if(any(diff(sU)==0)& all(diff(sV)!=0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+image(sort(U+runif(length(U),0,stepU)),sort(V),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
 }
+
+if(all(diff(sU)!=0)& any(diff(sV)==0)){
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+image(sort(U),sort(V+runif(length(U),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+}
+
+if(any(diff(sU)==0)& any(diff(sV)==0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+image(sort(U+runif(length(U),0,stepU)),sort(V+runif(length(U),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U+runif(length(U),0,stepU)),sort(V+runif(length(V),0,stepV)),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+}
+
+if(all(diff(sU)!=0)& all(diff(sV)!=0)){
+image(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution")
+filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=rainbow)
+filled.contour(sort(U),sort(V),KK,xlab="U",ylab="V",main="Joint distribution",color.palette=topo.colors)
+}}
+
 if(plot.type=="persp"){
 fcol<-topo.colors(10)[cut(KK[2:nrow(C),2:nrow(C)],10,include.lowest=TRUE)]
-                   persp(x=sort(U+runif(length(U),0,0.00001)),y=sort(V+runif(length(U),0,0.00001)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
-
+sU<-sort(U)
+sV<-sort(V)
+if(any(diff(sU)==0)& all(diff(sV)!=0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+persp(x=sort(U+runif(length(U),0,stepU)),y=sort(V),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
 }
+if(all(diff(sU)!=0)& any(diff(sV)==0)){
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+persp(x=sort(U),y=sort(V+runif(length(V),0,stepV)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+}
+if(any(diff(sU)==0)& any(diff(sV)==0)){
+stepU<-diff(range(U))/(length(U)*length(unique(U)))
+stepV<-diff(range(V))/(length(V)*length(unique(V)))
+persp(x=sort(U+runif(length(U),0,stepU)),y=sort(V+runif(length(V),0,stepV)),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+}
+if(all(diff(sU)!=0)& all(diff(sV)!=0)){
+persp(x=sort(U),y=sort(V),KK,theta=-135,phi=40,col=fcol,xlab="U",ylab="V",zlab="Joint distribution")
+}
+}
+
 
 }
 if(plot.joint==FALSE){
@@ -2348,7 +2478,6 @@ if((display.FS==FALSE)&(display.UV==FALSE)){
 
 }
 
-
 cat("n.iterations",iter,"\n")
 cat("S0",S0,"\n")
 cat("events",events,"\n")
@@ -2367,20 +2496,20 @@ print(summary,digits=5, justify="left")
 
 if(trunc=="both"){
 return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-Sob, truncation.probs=as.vector(F0), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
+as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
 lower.Sob=lowerS, density.joint=as.vector(FKval),marginal.U=fU, marginal.V=fV, upper.fU=upperU, lower.fU=lowerU,upper.fV=upperV, lower.fV=lowerV,cumulative.joint=KK )))
 
 }
 
 if(trunc=="left"){
 return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-Sob, truncation.probs=as.vector(F0), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
+as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
 lower.Sob=lowerS, density.joint=as.vector(ku),marginal.U=fU,upper.fU=upperU, lower.fU=lowerU)))
 }
 if(trunc=="right"){
 
 return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-Sob, truncation.probs=as.vector(F0), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
+as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
 lower.Sob=lowerS, density.joint=as.vector(kv), marginal.V=fV, upper.fV=upperV, lower.fV=lowerV )))
 
 }
@@ -2397,18 +2526,18 @@ print(summary,digits=5, justify="left")
 
 if(trunc=="both"){
 return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-Sob, truncation.probs=as.vector(F0), density.joint=as.vector(FKval),marginal.U=fU, marginal.V=fV, cumulative.joint=KK )))
+as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, density.joint=as.vector(FKval),marginal.U=fU, marginal.V=fV, cumulative.joint=KK )))
 
 }
 
 if(trunc=="left"){
 return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-Sob, truncation.probs=as.vector(F0), density.joint=as.vector(k), marginal.U=fU)))
+as.vector(Sob), truncation.probs=as.vector(F0),biasf=biasf, density.joint=as.vector(k), marginal.U=fU)))
 }
 if(trunc=="right"){
 
 return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-Sob, truncation.probs=as.vector(F0), density.joint=as.vector(k), marginal.V=fV )))
+as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, density.joint=as.vector(k), marginal.V=fV )))
 
 }
 
