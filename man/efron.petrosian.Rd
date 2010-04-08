@@ -18,7 +18,7 @@ efron.petrosian(X, U = NA, V = NA, wt = NA, error = NA,
   \item{U}{ Numeric vector with the left truncation times. If there are no truncation times from the left, put \code{U}=\code{NA}.}
   \item{V}{ Numeric vector with the right truncation times. If there are no truncation times from the left, put \code{V}=\code{NA}.}
   \item{wt}{ Numeric vector of non-negative initial solution, with the same length as \code{X}. Default value is set to 1/n, being n the length of \code{X}. }
-  \item{error}{ Numeric value. Maximum distance among the densities computed in two successive steps. If this is missing, it is set to 10\% of 1/n. }
+  \item{error}{ Numeric value. Maximum pointwise error when estimating the density associated to X (f) in two consecutive steps. If this is missing, it is $1e{-06}$.}
   \item{nmaxit}{ Numeric value. Maximum number of iterations. If this is missing, it is set to \code{nmaxit} =100 . }
   \item{boot}{ Logical. If TRUE (default), the simple bootstrap method is applied to lifetime distribution estimation.
  Pointwise confidence bands are provided. }
@@ -78,21 +78,8 @@ for (i in 1:n){
 	V[i]<-runif(1,0.5,1)
 					   }
 		 }
-efron.petrosian(X=X,U=U,V=V,display.F=TRUE,display.S=TRUE)
+efron.petrosian(X=X,U=U,V=V,boot=FALSE,display.F=TRUE,display.S=TRUE)
 
-##  Generating data which are left truncated
-
-n<-25
-X<-runif(n,0,1)
-U<-runif(n,0,0.5)
-
-for (i in 1:n){
-	while (X[i]<U[i]){
-	U[i]<-runif(1,0,0.5)
-	X[i]<-runif(1,0,1)
-			     }
-		  }
-efron.petrosian(X=X,U=U,V=NA)
 
 ## Generating data which are right truncated
 
@@ -106,7 +93,7 @@ for (i in 1:n){
 	X[i]<-runif(1,0,1)
 			     }
 		  }
-efron.petrosian(X=X,U=NA,V=V,display.F=TRUE)
+efron.petrosian(X=X,U=NA,V=V,nmaxit=1000,display.F=TRUE)
 
 }
 

@@ -16,8 +16,8 @@ Plots of cumulative distributions and survival functions are provided.
 \tabular{ll}{
 Package: \tab DTDA\cr
 Type: \tab Package\cr
-Version: \tab 1.2-1\cr
-Date: \tab 2009-12-10\cr
+Version: \tab 1.2-2\cr
+Date: \tab 2010-04-08\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }

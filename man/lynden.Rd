@@ -18,7 +18,7 @@ lynden(X, U = NA, V = NA, error = NA, nmaxit = NA,
   \item{X}{ Numeric vector with the times of ultimate interest.}
   \item{U}{Numeric vector with the left truncation times. If there are no truncation times from the left, put \code{U}=\code{NA}.}
   \item{V}{ Numeric vector with the right truncation times. If there are no truncation times from the left, put \code{V}=\code{NA}.}
-   \item{error}{ Numeric value. Maximum distance among the densities computed in two successive steps. If this is missing, it is set to 10\% of 1/n. }
+   \item{error}{ Numeric value. Maximum pointwise error when estimating the density associated to X (f) in two consecutive steps. If this is missing, it is $1e{-06}$.}
   \item{nmaxit}{ Numeric value. Maximum number of iterations. If this is missing, it is set to \code{nmaxit} =100 . }
   \item{boot}{ Logical. If TRUE (default), the simple bootstrap method is applied to lifetime distribution estimation.
  Pointwise confidence bands are provided. }

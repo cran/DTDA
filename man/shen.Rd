@@ -21,7 +21,7 @@ shen(X, U = NA, V = NA, wt = NA, error = NA,
   \item{U}{ Numeric vector with the left truncation times. If there are no truncation times from the left, put \code{U}=\code{NA}.}
   \item{V}{ Numeric vector with the right truncation times. If there are no truncation times from the left, put \code{V}=\code{NA}.}
   \item{wt}{ Numeric vector of non-negative initial solution, with the same length as \code{X}. Default value is set to 1/n, being n the length of \code{X}. }
-  \item{error}{ Numeric value. Maximum distance among the densities computed in two successive steps. If this is missing, it is set to 10\% of 1/n. }
+  \item{error}{ Numeric value. Maximum pointwise error when estimating the density associated to X (f) in two consecutive steps. If this is missing, it is $1e{-06}$.}
   \item{nmaxit}{ Numeric value. Maximum number of iterations. If this is missing, it is set to \code{nmaxit} =100 . }
   \item{boot}{ Logical. If TRUE (default), the simple bootstrap method is applied to lifetime and truncation times distributions estimation.
  Pointwise confidence bands are provided. }
@@ -31,7 +31,7 @@ shen(X, U = NA, V = NA, wt = NA, error = NA,
     \item{display.FS}{ Logical. Default is FALSE. If TRUE, the estimated cumulative distribution function and the estimated survival function associated to \code{X}, (F) and (S) respectively, are plotted.   }
   \item{display.UV}{ Logical. Default is FALSE. If TRUE, the marginal distributions of \code{U} \code{(fU)} and \code{V} \code{(fV)}, are plotted.} 
   \item{plot.joint}{ Logical. Default is FALSE. If TRUE, the joint distribution of the truncation times is plotted. }
-  \item{plot.type}{ A character string giving the plot type to be used to representing the joint distribution of the truncation times. 
+  \item{plot.type}{ A character string giving the plot type to be used to represent the joint distribution of the truncation times. 
  This must be one of "image" or "persp", with default \code{NULL}. }
 }
 \details{
@@ -98,7 +98,7 @@ for (i in 1:n){
 					}
 		}
 
-res<-shen(X,U,V,boot.type="obvious",plot.joint=TRUE, plot.type="persp")
+res<-shen(X,U,V,boot=FALSE, plot.joint=TRUE, plot.type="persp")
 
 ##  Generating data which are left truncated
 

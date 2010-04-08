@@ -56,7 +56,7 @@ EE<-matrix(0,nrow=nrow(D),ncol=ncol(D))
 C[,1]<-sort(D[,1])
 C[,2:ncol(D)]<-D[ord,2:ncol(D)]
 
-if(is.na(error)==TRUE) error<-1/(10*nrow(C))
+if(is.na(error)==TRUE) error<-1e-6
 J<-matrix(data=0,ncol=nrow(C),nrow=nrow(C))
 for (i in 1:nrow(C)){
 for(j in 1:nrow(C)) {
@@ -73,6 +73,7 @@ if(is.na(nmaxit)==TRUE)nmaxit<-100
 iter<-0
 while(S0>error | iter>nmaxit){
 iter<-iter+1
+if (iter>nmaxit) stop("Default number of iterations not enough for convergence")
 F0<-JI%*%f
 k0<-((sum(1/F0))^(-1))*(1/F0)
 if(sum(k0)!=1)k0<-k0/sum(k0)
@@ -478,8 +479,9 @@ f0b<-matrix(data=wt,ncol=1,nrow=nrow(M2b))
 f1b<-f0b
  S0b<-1
 iterb<-0
-while(S0b>error){
+while(S0b>error|iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 k0b<-((sum(1/F0b))^(-1))*(1/F0b)
 if(sum(k0b)!=1)k0b<-k0b/sum(k0b)
@@ -631,8 +633,9 @@ f0b<-matrix(data=wt,ncol=1,nrow=nrow(M2b))
 f1b<-f0b
  S0b<-1
 iterb<-0
-while(S0b>error){
+while(S0b>error|iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 k0b<-((sum(1/F0b))^(-1))*(1/F0b)
 if(sum(k0b)!=1)k0b<-k0b/sum(k0b)
@@ -766,8 +769,9 @@ f0b<-matrix(data=wt,ncol=1,nrow=nrow(M2b))
 f1b<-f0b
  S0b<-1
 iterb<-0
-while(S0b>error){
+while(S0b>error|iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 k0b<-((sum(1/F0b))^(-1))*(1/F0b)
 if(sum(k0b)!=1)k0b<-k0b/sum(k0b)
@@ -924,7 +928,7 @@ DBB<-matrix(0,nrow=nrow(C),ncol=3)
 DBB[,1]<-sort(DB[,1])
 DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
-error<-1/(10*nrow(DBB))
+error<-1e-6
 Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
 for (i in 1:nrow(DBB)){
 for(j in 1:nrow(DBB)) {
@@ -938,8 +942,9 @@ f1b<-f0b
 S0b<-1
 if(is.na(nmaxit)==TRUE)nmaxit<-100
 iterb<-0
-while(S0b>error){
+while(S0b>error|iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 k0b<-((sum(1/F0b))^(-1))*(1/F0b)
 if(sum(k0b)!=1)k0b<-k0b/sum(k0b)
@@ -1108,7 +1113,7 @@ DBB<-matrix(0,nrow=nrow(C),ncol=3)
 DBB[,1]<-sort(DB[,1])
 DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
-error<-1/(10*nrow(DBB))
+error<-1e-6
 Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
 for (i in 1:nrow(DBB)){
 for(j in 1:nrow(DBB)) {
@@ -1122,8 +1127,9 @@ f1b<-f0b
 S0b<-1
 if(is.na(nmaxit)==TRUE)nmaxit<-100
 iterb<-0
-while(S0b>error){
+while(S0b>error|iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 k0b<-((sum(1/F0b))^(-1))*(1/F0b)
 if(sum(k0b)!=1)k0b<-k0b/sum(k0b)
@@ -1275,7 +1281,7 @@ DBBB<-matrix(0,nrow=nrow(C),ncol=3)
 DBB[,1]<-sort(DB[,1])
 DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
-error<-1/(10*nrow(DBB))
+error<-1e-6
 Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
 for (k in 1:nrow(DBB)){
 for(j in 1:nrow(DBB)) {
@@ -1291,6 +1297,7 @@ if(is.na(nmaxit)==TRUE)nmaxit<-100
 iterb<-0
 while(S0b>error | iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 k0b<-((sum(1/F0b))^(-1))*(1/F0b)
 if(sum(k0b)!=1)k0b<-k0b/sum(k0b)
@@ -2488,36 +2495,36 @@ if(boot==TRUE){
  cat("alpha",alpha,"\n")
 cat("Boot",boot.type,"\n")
 
-summary<-cbind("time"=x,"n.event"=mult,"density"=Fval,"cumulative.df"=FF,"survival"=Sob)
+summary<-cbind("time"=x,"n.event"=mult,"density"=round(Fval,5),"cumulative.df"=round(FF,5),"survival"=round(Sob,5))
 
 colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival")
 rownames(summary)<-rep("",times=length(x))
 print(summary,digits=5, justify="left")
 
 if(trunc=="both"){
-return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
-lower.Sob=lowerS, density.joint=as.vector(FKval),marginal.U=fU, marginal.V=fV, upper.fU=upperU, lower.fU=lowerU,upper.fV=upperV, lower.fV=lowerV,cumulative.joint=KK )))
+return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=round(as.vector(Fval),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
+lower.Sob=round(lowerS,5), density.joint=round(as.vector(FKval),5),marginal.U=round(fU,5), marginal.V=round(fV,5), upper.fU=round(upperU,5), lower.fU=round(lowerU,5),upper.fV=round(upperV,5), lower.fV=round(lowerV,5),cumulative.joint=round(KK,5) )))
 
 }
 
 if(trunc=="left"){
-return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
-lower.Sob=lowerS, density.joint=as.vector(ku),marginal.U=fU,upper.fU=upperU, lower.fU=lowerU)))
+return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=round(as.vector(Fval),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
+lower.Sob=round(lowerS,5), density.joint=round(as.vector(ku),5),marginal.U=round(fU,5),upper.fU=round(upperU,5), lower.fU=round(lowerU,5))))
 }
 if(trunc=="right"){
 
-return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
-lower.Sob=lowerS, density.joint=as.vector(kv), marginal.V=fV, upper.fV=upperV, lower.fV=lowerV )))
+return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=x, n.event=mult, density=round(as.vector(Fval),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
+lower.Sob=round(lowerS,5), density.joint=round(as.vector(kv),5), marginal.V=round(fV,5), upper.fV=round(upperV,5), lower.fV=round(lowerV,5) )))
 
 }
 }
 
 if(boot==FALSE){
  
-summary<-cbind("time"=x,"n.event"=mult,"density"=as.vector(Fval),"cumulative.df"=FF,"survival"=Sob)
+summary<-cbind("time"=x,"n.event"=mult,"density"=round(as.vector(Fval),5),"cumulative.df"=round(FF,5),"survival"=round(Sob,5))
 
 colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival")
 rownames(summary)<-rep("",times=length(x))
@@ -2525,19 +2532,19 @@ print(summary,digits=5, justify="left")
 
 
 if(trunc=="both"){
-return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, density.joint=as.vector(FKval),marginal.U=fU, marginal.V=fV, cumulative.joint=KK )))
+return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=round(as.vector(Fval),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), density.joint=round(as.vector(FKval),5),marginal.U=round(fU,5), marginal.V=round(fV,5), cumulative.joint=round(KK,5) )))
 
 }
 
 if(trunc=="left"){
-return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0),biasf=biasf, density.joint=as.vector(k), marginal.U=fU)))
+return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=round(as.vector(Fval),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5),biasf=round(biasf,5), density.joint=round(as.vector(k),5), marginal.U=round(fU,5))))
 }
 if(trunc=="right"){
 
-return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=as.vector(Fval), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0), biasf=biasf, density.joint=as.vector(k), marginal.V=fV )))
+return(invisible(list(n.iterations=iter,events=events, time=x, n.event=mult, density=round(as.vector(Fval),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), density.joint=round(as.vector(k),5), marginal.V=round(fV,5) )))
 
 }
 

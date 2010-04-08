@@ -52,7 +52,7 @@ C[,1]<-sort(D[,1])
 C[,2:ncol(D)]<-D[ord,2:ncol(D)]
 
 
-if(is.na(error)==TRUE) error<-1/(10*nrow(C))
+if(is.na(error)==TRUE) error<-1e-6
 J<-matrix(data=0,ncol=nrow(C),nrow=nrow(C))
 for (k in 1:nrow(C)){
 for(j in 1:nrow(C)) {
@@ -69,7 +69,8 @@ if(is.na(nmaxit)==TRUE)nmaxit<-100
 iter<-0
 while(S0>error | iter>nmaxit){
 iter<-iter+1
-#cat("iter",iter,"\n")
+if (iter>nmaxit) stop("Default number of iterations not enough for convergence")
+
 F0<-JI%*%f
 IF0<-1/F0
 If1<-J%*%IF0
@@ -142,6 +143,7 @@ f1b<-f0b
 iterb<-0
 while(S0b>error|iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 IF0b<-1/F0b
 If1b<-Jb%*%IF0b
@@ -223,6 +225,7 @@ f1b<-f0b
 iterb<-0
 while(S0b>error|iterb>nmaxit){
 iterb<-iterb+1
+if (iterb>nmaxit) stop("Default number of iterations not enough for convergence")
 F0b<-JIb%*%f1b
 IF0b<-1/F0b
 If1b<-Jb%*%IF0b
@@ -745,14 +748,14 @@ if(boot==TRUE){
  cat("B",B,"\n")
  cat("alpha",alpha,"\n")
 
-summary<-cbind("time"=x,"n.event"=mult,"density"=f,"cumulative.df"=FF,"survival"=Sob)
+summary<-cbind("time"=x,"n.event"=mult,"density"=round(f,5),"cumulative.df"=round(FF,5),"survival"=round(Sob,5))
 
 colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival")
 rownames(summary)<-rep("",times=length(x))
 print(summary,digits=5, justify="left")
-return(invisible(list(n.iterations=iter, events=events, B=B, alpha=alpha,time=x, n.event=mult, density=as.vector(f), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0), upper.df=upperF,lower.df=lowerF,upper.Sob=upperS,
-lower.Sob=lowerS)))
+return(invisible(list(n.iterations=iter, events=events, B=B, alpha=alpha,time=x, n.event=mult, density=round(as.vector(f),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
+lower.Sob=round(lowerS,5))))
 
 
 
@@ -760,13 +763,13 @@ lower.Sob=lowerS)))
 
 if(boot==FALSE){
  
-summary<-cbind("time"=x,"n.event"=mult,"density"=f,"cumulative.df"=FF,"survival"=Sob)
+summary<-cbind("time"=x,"n.event"=mult,"density"=round(f,5),"cumulative.df"=round(FF,5),"survival"=round(Sob,5))
 
 colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival")
 rownames(summary)<-rep("",times=length(x))
 print(summary,digits=5, justify="left")
-return(invisible(list(n.iterations=iter, events=events, time=x, n.event=mult, density=as.vector(f), cumulative.df=FF, survival=
-as.vector(Sob), truncation.probs=as.vector(F0))))
+return(invisible(list(n.iterations=iter, events=events, time=x, n.event=mult, density=round(as.vector(f),5), cumulative.df=round(FF,5), survival=
+round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5))))
 
 
 }
