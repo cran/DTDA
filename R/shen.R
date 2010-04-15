@@ -86,7 +86,7 @@ f0<-f
 k0<-k
 }
 
-
+F0<-JI%*%f
 
 mult <- tabulate(match(C[,1],unique(C[,1])))
 	if(sum(mult)==length(unique(C[,1]))){   

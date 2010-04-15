@@ -144,7 +144,7 @@ Gvi1[j,]<-auxi
 
 
 F0<-t(J)%*%f
-Q0<-Gvi0/F0
+Q0<-Gvi1/F0
 for(i in 1:nrow(h)){
 h[i,]<- 1/(NJ[i,]+(J[i,])%*%Q0)
 }
@@ -321,7 +321,7 @@ if (M2b[j,3]< M2b[k,1]) {auxib<-sum(f1b[k,])+ auxib}
 Gvi1b[j,]<-auxib
 }
 F0b<-t(Jb)%*%f1b
-Q0b<-Gvi0b/F0b
+Q0b<-Gvi1b/F0b
 for(i in 1:nrow(h1b)){
 h1b[i,]<- 1/(NJb[i,]+(Jb[i,])%*%Q0b)
 }
@@ -471,7 +471,7 @@ if (M2b[j,3]< M2b[k,1]) {auxib<-sum(f1b[k,])+ auxib}
 Gvi1b[j,]<-auxib
 }
 F0b<-t(Jb)%*%f1b
-Q0b<-Gvi0b/F0b
+Q0b<-Gvi1b/F0b
 for(i in 1:nrow(h1b)){
 h1b[i,]<- 1/(NJb[i,]+(Jb[i,])%*%Q0b)
 }

@@ -80,7 +80,7 @@ for (i in 1:n){
 	V[i]<-runif(1,0.75,1)
 					   }
 		 }
-res<-lynden(X=X, U=U, V=V, display.F=TRUE, display.S=TRUE)
+res<-lynden(X=X, U=U, V=V, boot=FALSE, display.F=TRUE, display.S=TRUE)
 
 #  Generating data which are left truncated
 
