@@ -10,14 +10,15 @@ Doubly truncated data analysis
 This package implements different algorithms for analyzing randomly truncated data, one-sided and two-sided (i.e. doubly) truncated data. 
 It incorporates the iterative methods introduced by \cite{Efron and Petrosian (1999)} and \cite{Shen (2008)}.
 Estimation of the lifetime distribution function and truncation times distributions is possible, together with the corresponding pointwise confidence limits based on bootstrap methods.
-Plots of cumulative distributions and survival functions are provided.
+Plots of cumulative distributions and survival functions are provided. Two real data sets are included: right-truncated
+AIDS data and doubly truncated data on quasar luminosities.
 }
 \details{
 \tabular{ll}{
 Package: \tab DTDA\cr
 Type: \tab Package\cr
-Version: \tab 1.2-3\cr
-Date: \tab 2010-04-15\cr
+Version: \tab 2.1-0\cr
+Date: \tab 2010-11-04\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }

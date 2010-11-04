@@ -81,20 +81,6 @@ for (i in 1:n){
 efron.petrosian(X=X,U=U,V=V,boot=FALSE,display.F=TRUE,display.S=TRUE)
 
 
-## Generating data which are right truncated
-
-n<-25
-X<-runif(n,0,1)
-V<-runif(n,0.5,1)
-
-for (i in 1:n){
-	while (X[i]>V[i]){
-	V[i]<-runif(1,0.5,1)
-	X[i]<-runif(1,0,1)
-			     }
-		  }
-efron.petrosian(X=X,U=NA,V=V,nmaxit=1000,display.F=TRUE)
-
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

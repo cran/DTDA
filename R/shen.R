@@ -1,4 +1,4 @@
-`shen` <-
+shen <-
 function(X, U=NA, V=NA, wt=NA, error=NA, nmaxit=NA,
  boot=TRUE, boot.type="simple",B=NA, alpha=NA, 
 display.FS=FALSE, display.UV=FALSE,
@@ -89,12 +89,12 @@ k0<-k
 F0<-JI%*%f
 
 mult <- tabulate(match(C[,1],unique(C[,1])))
-	if(sum(mult)==length(unique(C[,1]))){   
-		Fval <- (f*mult)}
-	if(sum(mult)>length(unique(C[,1]))){
-		weigth<-f[!duplicated(C[,1])]
-		Fval<- (weigth*mult)}
-	
+if(sum(mult)==length(unique(C[,1]))){   
+Fval <- (f*mult)}
+if(sum(mult)>length(unique(C[,1]))){
+weigth<-f[!duplicated(C[,1])]
+Fval<- (weigth*mult)}
+
 x<-unique(C[,1])
 events<-sum(mult)
 n.event<-mult
@@ -120,30 +120,30 @@ kMUV[,2]<-kMUV[ordUV,2]
 
 kuv<-numeric(nrow(C))
 for(i in 1:nrow(kMUV)){
-	indbbb<-((kMUV[,1]==kMUV[i,1])&(kMUV[,2]==kMUV[i,2]))
-	pos1<-min(which(indbbb==TRUE))
-	if(pos1==1){
-	kuv[indbbb]<-sum(k[indbbb])}
-	if(pos1>1){
-	kuv[indbbb]<-sum(k[indbbb])
-	}
+indbbb<-((kMUV[,1]==kMUV[i,1])&(kMUV[,2]==kMUV[i,2]))
+pos1<-min(which(indbbb==TRUE))
+if(pos1==1){
+kuv[indbbb]<-sum(k[indbbb])}
+if(pos1>1){
+kuv[indbbb]<-sum(k[indbbb])
+}
 }
 
 KUUVV<-cbind(kMUV[,1],kMUV[,2])
 
 multC<-dim(unique(KUUVV,margin=1))[1] 
 if(multC==dim(KUUVV)[1]){
-	mult8<-rep(1,times=multC)   
-	FKval <- (kuv*mult8)}
+mult8<-rep(1,times=multC)   
+FKval <- (kuv*mult8)}
 if(multC<dim(KUUVV)[1]){
-	weigth8<-kuv[!duplicated(KUUVV,margin=1)]
-	mult8<-numeric(multC)
-	for(i in 1:multC){
-	for(j in 1:dim(KUUVV)[1]){
-		aux8<-sum(KUUVV[j,]==unique(KUUVV,margin=1)[i,])
-		if(aux8==2) mult8[i]<-mult8[i]+1
-	}}
-	FKval<- (weigth8)}
+weigth8<-kuv[!duplicated(KUUVV,margin=1)]
+mult8<-numeric(multC)
+for(i in 1:multC){
+for(j in 1:dim(KUUVV)[1]){
+aux8<-sum(KUUVV[j,]==unique(KUUVV,margin=1)[i,])
+if(aux8==2) mult8[i]<-mult8[i]+1
+}}
+FKval<- (weigth8)}
 
 
 kMU<-cbind(U,k)
@@ -154,24 +154,24 @@ kMU[,2]<-kMU[ordU,2]
 
 kk0u<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbbu<-(kMU[,1]==kMU[i,1])
-	posu<-min(which(indbbu==TRUE))
-	if(posu==1){
-	kk0u[indbbu]<-sum(kMU[,2][indbbu])}
-	if(posu>1){
-	kk0u[indbbu]<-sum(kMU[,2][indbbu])
-	}
+indbbu<-(kMU[,1]==kMU[i,1])
+posu<-min(which(indbbu==TRUE))
+if(posu==1){
+kk0u[indbbu]<-sum(kMU[,2][indbbu])}
+if(posu>1){
+kk0u[indbbu]<-sum(kMU[,2][indbbu])
+}
 }
 
 
 multu <- tabulate(match(kMU[,1],unique(kMU[,1])))
-	if(sum(multu)==length(unique(kMU[,1]))){   
-		fUval <- (kk0u)}
-	if(sum(multu)>length(unique(kMU[,1]))){
-		weigthu<-kk0u[!duplicated(kMU[,1])]
-		fUval<- (weigthu)}
+if(sum(multu)==length(unique(kMU[,1]))){   
+fUval <- (kk0u)}
+if(sum(multu)>length(unique(kMU[,1]))){
+weigthu<-kk0u[!duplicated(kMU[,1])]
+fUval<- (weigthu)}
 
-	
+
 UU<-unique(kMU[,1])
 fU<-cumsum(fUval)
 
@@ -183,22 +183,22 @@ kMV[,2]<-kMV[ordV,2]
 
 kk0v<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbbv<-(kMV[,1]==kMV[i,1])
-	posv<-min(which(indbbv==TRUE))
-	if(posv==1){
-	kk0v[indbbv]<-sum(kMV[,2][indbbv])}
-	if(posv>1){
-	kk0v[indbbv]<-sum(kMV[,2][indbbv])
-	}
+indbbv<-(kMV[,1]==kMV[i,1])
+posv<-min(which(indbbv==TRUE))
+if(posv==1){
+kk0v[indbbv]<-sum(kMV[,2][indbbv])}
+if(posv>1){
+kk0v[indbbv]<-sum(kMV[,2][indbbv])
+}
 }
 
 
 multv <- tabulate(match(kMV[,1],unique(kMV[,1])))
-	if(sum(multv)==length(unique(kMV[,1]))){   
-		fVval <- (kk0v)}
-	if(sum(multv)>length(unique(kMV[,1]))){
-		weigthv<-kk0v[!duplicated(kMV[,1])]
-		fVval<- (weigthv)}
+if(sum(multv)==length(unique(kMV[,1]))){   
+fVval <- (kk0v)}
+if(sum(multv)>length(unique(kMV[,1]))){
+weigthv<-kk0v[!duplicated(kMV[,1])]
+fVval<- (weigthv)}
 
 VV<-unique(kMV[,1])
 fV<-cumsum(fVval)
@@ -215,11 +215,11 @@ KKG[i,]<-KKG[i,]+kMUV[j,3]
 }}
 
 multG <- tabulate(match(EE[,1],unique(EE[,1])))
-	if(sum(multG)==length(unique(EE[,1]))){   
-		fGval <- (KKG)}
-	if(sum(multG)>length(unique(EE[,1]))){
-		weigthG<-KKG[!duplicated(EE[,1])]
-		fGval<- (weigthG)}
+if(sum(multG)==length(unique(EE[,1]))){   
+fGval <- (KKG)}
+if(sum(multG)>length(unique(EE[,1]))){
+weigthG<-KKG[!duplicated(EE[,1])]
+fGval<- (weigthG)}
 
 
 ordc<-order(unique(EE[,1]))
@@ -321,11 +321,11 @@ KKG[i,]<-KKG[i,]+kMU[j,2]
 }}
 
 multG <- tabulate(match(EE[,1],unique(EE[,1])))
-	if(sum(multG)==length(unique(EE[,1]))){   
-		fGval <- (KKG)}
-	if(sum(multG)>length(unique(EE[,1]))){
-		weigthG<-KKG[!duplicated(EE[,1])]
-		fGval<- (weigthG)}
+if(sum(multG)==length(unique(EE[,1]))){   
+fGval <- (KKG)}
+if(sum(multG)>length(unique(EE[,1]))){
+weigthG<-KKG[!duplicated(EE[,1])]
+fGval<- (weigthG)}
 
 
 ordc<-order(unique(EE[,1]))
@@ -334,24 +334,24 @@ biasf<-fGval[ordc]
 
 kk0b<-numeric(nrow(kMU))
 for(i in 1:nrow(kMU)){
-	indbb9<-(kMU[,1]==kMU[i,1])
-	pos9<-min(which(indbb9==TRUE))
-	if(pos9==1){
-	kk0b[indbb9]<-sum(kMU[,2][indbb9])}
-	if(pos9>1){
-	kk0b[indbb9]<-sum(kMU[,2][indbb9])
-	}
+indbb9<-(kMU[,1]==kMU[i,1])
+pos9<-min(which(indbb9==TRUE))
+if(pos9==1){
+kk0b[indbb9]<-sum(kMU[,2][indbb9])}
+if(pos9>1){
+kk0b[indbb9]<-sum(kMU[,2][indbb9])
+}
 }
 
 
 
 mult3 <- tabulate(match(kMU[,1],unique(kMU[,1])))
-	if(sum(mult3)==length(unique(kMU[,1]))){   
-		fUval <- (kk0b)}
-	if(sum(mult3)>length(unique(kMU[,1]))){
-		weigth3<-kk0b[!duplicated(kMU[,1])]
-		fUval<- (weigth3)}
-	
+if(sum(mult3)==length(unique(kMU[,1]))){   
+fUval <- (kk0b)}
+if(sum(mult3)>length(unique(kMU[,1]))){
+weigth3<-kk0b[!duplicated(kMU[,1])]
+fUval<- (weigth3)}
+
 UU<-unique(kMU[,1])
 ku<-fUval
 fU<-cumsum(fUval)
@@ -385,11 +385,11 @@ KKG[i,]<-KKG[i,]+kMV[j,2]
 }}
 
 multG <- tabulate(match(EE[,1],unique(EE[,1])))
-	if(sum(multG)==length(unique(EE[,1]))){   
-		fGval <- (KKG)}
-	if(sum(multG)>length(unique(EE[,1]))){
-		weigthG<-KKG[!duplicated(EE[,1])]
-		fGval<- (weigthG)}
+if(sum(multG)==length(unique(EE[,1]))){   
+fGval <- (KKG)}
+if(sum(multG)>length(unique(EE[,1]))){
+weigthG<-KKG[!duplicated(EE[,1])]
+fGval<- (weigthG)}
 
 
 ordc<-order(unique(EE[,1]))
@@ -398,22 +398,22 @@ biasf<-fGval[ordc]
 
 kk0b<-numeric(nrow(kMV))
 for(i in 1:nrow(kMV)){
-	indbb9<-(kMV[,1]==kMV[i,1])
-	pos9<-min(which(indbb9==TRUE))
-	if(pos9==1){
-	kk0b[indbb9]<-sum(kMV[,2][indbb9])}
-	if(pos9>1){
-	kk0b[indbb9]<-sum(kMV[,2][indbb9])
-	}
+indbb9<-(kMV[,1]==kMV[i,1])
+pos9<-min(which(indbb9==TRUE))
+if(pos9==1){
+kk0b[indbb9]<-sum(kMV[,2][indbb9])}
+if(pos9>1){
+kk0b[indbb9]<-sum(kMV[,2][indbb9])
+}
 }
 
 
 mult4 <- tabulate(match(kMV[,1],unique(kMV[,1])))
-	if(sum(mult4)==length(unique(kMV[,1]))){   
-		fVval <- (kk0b)}
-	if(sum(mult4)>length(unique(kMV[,1]))){
-		weigth4<-kk0b[!duplicated(kMV[,1])]
-		fVval<- (weigth4)}
+if(sum(mult4)==length(unique(kMV[,1]))){   
+fVval <- (kk0b)}
+if(sum(mult4)>length(unique(kMV[,1]))){
+weigth4<-kk0b[!duplicated(kMV[,1])]
+fVval<- (weigth4)}
 
 
 VV<-unique(kMV[,1])
@@ -496,26 +496,26 @@ k0b<-k1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos1<-min(which(indbb1==TRUE))
-	if(pos1==1){
-	ff0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos1>1){
-	ff0b[indbb1]<-sum(f1b[indbb1])
-	}
+indbb1<-(C[,1]==C[i,1])
+pos1<-min(which(indbb1==TRUE))
+if(pos1==1){
+ff0b[indbb1]<-sum(f1b[indbb1])}
+if(pos1>1){
+ff0b[indbb1]<-sum(f1b[indbb1])
+}
 }
 
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb7<-(C[,1]==C[i,1])
-	pos0<-min(which(indbb7==TRUE))
-	if(pos0==1){
-	FF0b[indbb7]<-sum(f1b[indbb7])}
-	if(pos0>1){
-	FF0b[indbb7]<-sum(f1b[indbb7])+FF0b[pos0-1]
-	}
+indbb7<-(C[,1]==C[i,1])
+pos0<-min(which(indbb7==TRUE))
+if(pos0==1){
+FF0b[indbb7]<-sum(f1b[indbb7])}
+if(pos0>1){
+FF0b[indbb7]<-sum(f1b[indbb7])+FF0b[pos0-1]
+}
 }
 Sobb<-1-FF0b+ff0b
 Sobb[Sobb<1e-12]<-0
@@ -650,26 +650,26 @@ k0b<-k1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb7<-(C[,1]==C[i,1])
-	pos7<-min(which(indbb7==TRUE))
-	if(pos7==1){
-	ff0b[indbb7]<-sum(f1b[indbb7])}
-	if(pos7>1){
-	ff0b[indbb7]<-sum(f1b[indbb7])
-	}
+indbb7<-(C[,1]==C[i,1])
+pos7<-min(which(indbb7==TRUE))
+if(pos7==1){
+ff0b[indbb7]<-sum(f1b[indbb7])}
+if(pos7>1){
+ff0b[indbb7]<-sum(f1b[indbb7])
+}
 }
 
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos0<-min(which(indbb1==TRUE))
-	if(pos0==1){
-	FF0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos0>1){
-	FF0b[indbb1]<-sum(f1b[indbb1])+FF0b[pos0-1]
-	}
+indbb1<-(C[,1]==C[i,1])
+pos0<-min(which(indbb1==TRUE))
+if(pos0==1){
+FF0b[indbb1]<-sum(f1b[indbb1])}
+if(pos0>1){
+FF0b[indbb1]<-sum(f1b[indbb1])+FF0b[pos0-1]
+}
 }
 Sobb<-1-FF0b+ff0b
 Sobb[Sobb<1e-12]<-0
@@ -786,26 +786,26 @@ k0b<-k1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb7<-(C[,1]==C[i,1])
-	pos7<-min(which(indbb7==TRUE))
-	if(pos7==1){
-	ff0b[indbb7]<-sum(f1b[indbb7])}
-	if(pos7>1){
-	ff0b[indbb7]<-sum(f1b[indbb7])
-	}
+indbb7<-(C[,1]==C[i,1])
+pos7<-min(which(indbb7==TRUE))
+if(pos7==1){
+ff0b[indbb7]<-sum(f1b[indbb7])}
+if(pos7>1){
+ff0b[indbb7]<-sum(f1b[indbb7])
+}
 }
 
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos0<-min(which(indbb1==TRUE))
-	if(pos0==1){
-	FF0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos0>1){
-	FF0b[indbb1]<-sum(f1b[indbb1])+FF0b[pos0-1]
-	}
+indbb1<-(C[,1]==C[i,1])
+pos0<-min(which(indbb1==TRUE))
+if(pos0==1){
+FF0b[indbb1]<-sum(f1b[indbb1])}
+if(pos0>1){
+FF0b[indbb1]<-sum(f1b[indbb1])+FF0b[pos0-1]
+}
 }
 
 
@@ -959,25 +959,25 @@ k0b<-k1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos1<-min(which(indbb1==TRUE))
-	if(pos1==1){
-	ff0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos1>1){
-	ff0b[indbb1]<-sum(f1b[indbb1])
-	}
+indbb1<-(C[,1]==C[i,1])
+pos1<-min(which(indbb1==TRUE))
+if(pos1==1){
+ff0b[indbb1]<-sum(f1b[indbb1])}
+if(pos1>1){
+ff0b[indbb1]<-sum(f1b[indbb1])
+}
 }
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb<-(C[,1]==C[i,1])
-	posb<-min(which(indbb==TRUE))
-	if(posb==1){
-	FF0b[indbb]<-sum(f1b[indbb])}
-	if(posb>1){
-	FF0b[indbb]<-sum(f1b[indbb])+FF0b[posb-1]
-	}
+indbb<-(C[,1]==C[i,1])
+posb<-min(which(indbb==TRUE))
+if(posb==1){
+FF0b[indbb]<-sum(f1b[indbb])}
+if(posb>1){
+FF0b[indbb]<-sum(f1b[indbb])+FF0b[posb-1]
+}
 }
 
 Sobb<-1-FF0b+ff0b
@@ -1144,25 +1144,25 @@ k0b<-k1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos1<-min(which(indbb1==TRUE))
-	if(pos1==1){
-	ff0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos1>1){
-	ff0b[indbb1]<-sum(f1b[indbb1])
-	}
+indbb1<-(C[,1]==C[i,1])
+pos1<-min(which(indbb1==TRUE))
+if(pos1==1){
+ff0b[indbb1]<-sum(f1b[indbb1])}
+if(pos1>1){
+ff0b[indbb1]<-sum(f1b[indbb1])
+}
 }
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb<-(C[,1]==C[i,1])
-	posa<-min(which(indbb==TRUE))
-	if(posa==1){
-	FF0b[indbb]<-sum(f1b[indbb])}
-	if(posa>1){
-	FF0b[indbb]<-sum(f1b[indbb])+FF0b[posa-1]
-	}
+indbb<-(C[,1]==C[i,1])
+posa<-min(which(indbb==TRUE))
+if(posa==1){
+FF0b[indbb]<-sum(f1b[indbb])}
+if(posa>1){
+FF0b[indbb]<-sum(f1b[indbb])+FF0b[posa-1]
+}
 }
 Sobb<-1-FF0b+ff0b
 Sobb[Sobb<1e-12]<-0
@@ -1313,25 +1313,25 @@ k0b<-k1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos1<-min(which(indbb1==TRUE))
-	if(pos1==1){
-	ff0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos1>1){
-	ff0b[indbb1]<-sum(f1b[indbb1])
-	}
+indbb1<-(C[,1]==C[i,1])
+pos1<-min(which(indbb1==TRUE))
+if(pos1==1){
+ff0b[indbb1]<-sum(f1b[indbb1])}
+if(pos1>1){
+ff0b[indbb1]<-sum(f1b[indbb1])
+}
 }
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb<-(C[,1]==C[i,1])
-	posw<-min(which(indbb==TRUE))
-	if(posw==1){
-	FF0b[indbb]<-sum(f1b[indbb])}
-	if(posw>1){
-	FF0b[indbb]<-sum(f1b[indbb])+FF0b[posw-1]
-	}
+indbb<-(C[,1]==C[i,1])
+posw<-min(which(indbb==TRUE))
+if(posw==1){
+FF0b[indbb]<-sum(f1b[indbb])}
+if(posw>1){
+FF0b[indbb]<-sum(f1b[indbb])+FF0b[posw-1]
+}
 }
 
 
@@ -2550,3 +2550,4 @@ round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), biasf=round(bi
 
 }
 }
+

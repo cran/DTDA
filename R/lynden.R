@@ -1,4 +1,4 @@
-`lynden` <-
+lynden <-
 function(X, U=NA, V=NA, error=NA, nmaxit=NA,
  boot=TRUE, B=NA, alpha=NA, display.F=FALSE, 
 display.S=FALSE){
@@ -159,47 +159,47 @@ indbb9<-seq(1,nrow(C),by=1)
 
 kk0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb9<-(C[,1]==C[i,1])
-	pos9<-min(which(indbb9==TRUE))
-	if(pos9==1){
-	kk0b[indbb9]<-sum(f[indbb9])}
-	if(pos9>1){
-	kk0b[indbb9]<-sum(f[indbb9])
-	}
+indbb9<-(C[,1]==C[i,1])
+pos9<-min(which(indbb9==TRUE))
+if(pos9==1){
+kk0b[indbb9]<-sum(f[indbb9])}
+if(pos9>1){
+kk0b[indbb9]<-sum(f[indbb9])
+}
 }
 
 
 mult4 <- tabulate(match(C[,1],unique(C[,1])))
-	if(sum(mult4)==length(unique(C[,1]))){   
-		Fval <- (kk0b)}
-	if(sum(mult4)>length(unique(C[,1]))){
-		weigth4<-kk0b[!duplicated(C[,1])]
-		Fval<- (weigth4)}
+if(sum(mult4)==length(unique(C[,1]))){   
+Fval <- (kk0b)}
+if(sum(mult4)>length(unique(C[,1]))){
+weigth4<-kk0b[!duplicated(C[,1])]
+Fval<- (weigth4)}
 
 
 
 
 hh0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb<-(C[,1]==C[i,1])
-	pos<-min(which(indbb==TRUE))
-	if(pos==1){
-	hh0b[indbb]<-sum(h[indbb])}
-	if(pos>1){
-	hh0b[indbb]<-sum(h[indbb])
-	}
+indbb<-(C[,1]==C[i,1])
+pos<-min(which(indbb==TRUE))
+if(pos==1){
+hh0b[indbb]<-sum(h[indbb])}
+if(pos>1){
+hh0b[indbb]<-sum(h[indbb])
+}
 }
 
 
 mult5 <- tabulate(match(C[,1],unique(C[,1])))
-	if(sum(mult5)==length(unique(C[,1]))){   
-		hval <- (hh0b)}
-	if(sum(mult5)>length(unique(C[,1]))){
-		weigth5<-hh0b[!duplicated(C[,1])]
-		hval<- (weigth5)}
+if(sum(mult5)==length(unique(C[,1]))){   
+hval <- (hh0b)}
+if(sum(mult5)>length(unique(C[,1]))){
+weigth5<-hh0b[!duplicated(C[,1])]
+hval<- (weigth5)}
 
 
-	
+
 x<-unique(C[,1])
 events<-sum(mult4)
 n.event<-mult4
@@ -333,26 +333,26 @@ f0b<-f1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos1<-min(which(indbb1==TRUE))
-	if(pos1==1){
-	ff0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos1>1){
-	ff0b[indbb1]<-sum(f1b[indbb1])
-	}
+indbb1<-(C[,1]==C[i,1])
+pos1<-min(which(indbb1==TRUE))
+if(pos1==1){
+ff0b[indbb1]<-sum(f1b[indbb1])}
+if(pos1>1){
+ff0b[indbb1]<-sum(f1b[indbb1])
+}
 }
 
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb<-(C[,1]==C[i,1])
-	pos<-min(which(indbb==TRUE))
-	if(pos==1){
-	FF0b[indbb]<-sum(f1b[indbb])}
-	if(pos>1){
-	FF0b[indbb]<-sum(f1b[indbb])+FF0b[pos-1]
-	}
+indbb<-(C[,1]==C[i,1])
+pos<-min(which(indbb==TRUE))
+if(pos==1){
+FF0b[indbb]<-sum(f1b[indbb])}
+if(pos>1){
+FF0b[indbb]<-sum(f1b[indbb])+FF0b[pos-1]
+}
 }
 Sobb<-1-FF0b+ff0b
 Sobb[Sobb<1e-12]<-0
@@ -495,24 +495,24 @@ f1b<-f1b[ord2]
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbbb<-(E[,1]==E[i,1])
-	pos1<-min(which(indbbb==TRUE))
-	if(pos1==1){
-	FF0b[indbbb]<-sum(f1b[indbbb])}
-	if(pos1>1){
-	FF0b[indbbb]<-sum(f1b[indbbb])+FF0b[pos1-1]
-	}
+indbbb<-(E[,1]==E[i,1])
+pos1<-min(which(indbbb==TRUE))
+if(pos1==1){
+FF0b[indbbb]<-sum(f1b[indbbb])}
+if(pos1>1){
+FF0b[indbbb]<-sum(f1b[indbbb])+FF0b[pos1-1]
+}
 }
 
 fb<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb2<-(E[,1]==E[i,1])
-	pos2<-min(which(indbb2==TRUE))
-	if(pos2==1){
-	fb[indbb2]<-sum(f1b[indbb2])}
-	if(pos2>1){
-	fb[indbb2]<-sum(f1b[indbb2])
-	}
+indbb2<-(E[,1]==E[i,1])
+pos2<-min(which(indbb2==TRUE))
+if(pos2==1){
+fb[indbb2]<-sum(f1b[indbb2])}
+if(pos2>1){
+fb[indbb2]<-sum(f1b[indbb2])
+}
 }
 
 
@@ -1049,3 +1049,4 @@ round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5),  hazard=round(
 
 }
 }
+

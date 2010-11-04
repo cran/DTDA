@@ -1,4 +1,4 @@
-`efron.petrosian` <-
+efron.petrosian <-
 function(X, U=NA, V=NA, wt=NA, error=NA,
  nmaxit=NA , boot=TRUE, B=NA, alpha=NA, 
 display.F=FALSE, display.S=FALSE){
@@ -83,12 +83,12 @@ f0<-f
 
 F0<-JI%*%f
 mult <- tabulate(match(C[,1],unique(C[,1])))
-	if(sum(mult)==length(unique(C[,1]))){   
-		Fval <- (f*mult)}
-	if(sum(mult)>length(unique(C[,1]))){
-		weigth<-f[!duplicated(C[,1])]
-		Fval<- (weigth*mult)}
-	
+if(sum(mult)==length(unique(C[,1]))){   
+Fval <- (f*mult)}
+if(sum(mult)>length(unique(C[,1]))){
+weigth<-f[!duplicated(C[,1])]
+Fval<- (weigth*mult)}
+
 x<-unique(C[,1])
 events<-sum(mult)
 n.event<-mult
@@ -156,25 +156,25 @@ f0b<-f1b
 
 ff0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb1<-(C[,1]==C[i,1])
-	pos1<-min(which(indbb1==TRUE))
-	if(pos1==1){
-	ff0b[indbb1]<-sum(f1b[indbb1])}
-	if(pos1>1){
-	ff0b[indbb1]<-sum(f1b[indbb1])
-	}
+indbb1<-(C[,1]==C[i,1])
+pos1<-min(which(indbb1==TRUE))
+if(pos1==1){
+ff0b[indbb1]<-sum(f1b[indbb1])}
+if(pos1>1){
+ff0b[indbb1]<-sum(f1b[indbb1])
+}
 }
 
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb<-(C[,1]==C[i,1])
-	pos<-min(which(indbb==TRUE))
-	if(pos==1){
-	FF0b[indbb]<-sum(f1b[indbb])}
-	if(pos>1){
-	FF0b[indbb]<-sum(f1b[indbb])+FF0b[pos-1]
-	}
+indbb<-(C[,1]==C[i,1])
+pos<-min(which(indbb==TRUE))
+if(pos==1){
+FF0b[indbb]<-sum(f1b[indbb])}
+if(pos>1){
+FF0b[indbb]<-sum(f1b[indbb])+FF0b[pos-1]
+}
 }
 Sobb<-1-FF0b+ff0b
 Sobb[Sobb<1e-12]<-0
@@ -239,25 +239,25 @@ f0b<-f1b
 
 FF0b<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbb<-(C[,1]==C[i,1])
-	pos<-min(which(indbb==TRUE))
-	if(pos==1){
-	FF0b[indbb]<-sum(f1b[indbb])}
-	if(pos>1){
-	FF0b[indbb]<-sum(f1b[indbb])+FF0b[pos-1]
-	}
+indbb<-(C[,1]==C[i,1])
+pos<-min(which(indbb==TRUE))
+if(pos==1){
+FF0b[indbb]<-sum(f1b[indbb])}
+if(pos>1){
+FF0b[indbb]<-sum(f1b[indbb])+FF0b[pos-1]
+}
 }
 
 
 fb<-numeric(nrow(C))
 for(i in 1:nrow(C)){
-	indbbb<-(C[,1]==C[i,1])
-	pos1<-min(which(indbbb==TRUE))
-	if(pos1==1){
-	fb[indbbb]<-sum(f1b[indbbb])}
-	if(pos1>1){
-	fb[indbbb]<-sum(f1b[indbbb])
-	}
+indbbb<-(C[,1]==C[i,1])
+pos1<-min(which(indbbb==TRUE))
+if(pos1==1){
+fb[indbbb]<-sum(f1b[indbbb])}
+if(pos1>1){
+fb[indbbb]<-sum(f1b[indbbb])
+}
 }
 
 

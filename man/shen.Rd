@@ -100,20 +100,6 @@ for (i in 1:n){
 
 res<-shen(X,U,V,boot=FALSE, plot.joint=TRUE, plot.type="persp")
 
-##  Generating data which are left truncated
-
-n<-25
-X<-runif(n,0,1)
-U<-runif(n,0,0.67)
-for (i in 1:n){
-	while (X[i]<U[i]){
-	U[i]<-runif(1,0,0.67)
-	X[i]<-runif(1,0,1)
-				}
-		  }
-
-res<-shen(X,U,V=NA,boot=FALSE)
-
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
