@@ -17,8 +17,8 @@ AIDS data and doubly truncated data on quasar luminosities.
 \tabular{ll}{
 Package: \tab DTDA\cr
 Type: \tab Package\cr
-Version: \tab 2.1-0\cr
-Date: \tab 2010-11-04\cr
+Version: \tab 2.1-1\cr
+Date: \tab 2010-11-14\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }

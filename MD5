@@ -1,0 +1,14 @@
+99a08aeb4ad9bd8d671cee4d0a8f32d2 *DESCRIPTION
+9fdfeb11f7ddba6f3aab9aaa6b1ac5dd *NAMESPACE
+47b8bfafbd655c4a5aad27f3dc8d367c *R/efron.petrosian.R
+53b49c6963cfafa8f1a0fa4b1802cde2 *R/lynden.R
+b0d21bea3c678185cf3ad47e1ec57b34 *R/shen.R
+82077ac9bd92bdaaa86c6f49e388dae5 *data/AIDS.rda
+0460bbc5b334de5e8af0f302921d0067 *data/Quasars.rda
+f76494cc2023fa8fa2e699ea7179a024 *inst/CITATION
+d55213fce78b96c18150e871226c39f4 *man/AIDS.Rd
+18a833a7c37d466736c93f3b5292b557 *man/DTDA-package.Rd
+61a020b7b291a80baaacf4e94e65f97d *man/Quasars.Rd
+94591dc6b3a22c31ea3d2e0c81c0ee5b *man/efron.petrosian.Rd
+d4ead7a9b0b1a99b3d9047635eca1d67 *man/lynden.Rd
+a784665d084f60e0e7a74e9f50dbd205 *man/shen.Rd

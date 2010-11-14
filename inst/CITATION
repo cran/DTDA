@@ -1,0 +1,21 @@
+citHeader("To cite DTDA in publications use:")
+
+citEntry(entry = "Article",
+  title        = "{DTDA}: An {R} Package to Analyze Randomly Truncated Data",
+  author       = personList(as.person("Carla Moreira"),
+                   as.person("Jacobo de U\\~na-\\'{A}lvarez"),
+                   as.person("Rosa Crujeiras")),
+  journal      = "Journal of Statistical Software",
+  year         = "2010",
+  volume       = "37",
+  number       = "7",
+  pages        = "1--20",
+  url          = "http://www.jstatsoft.org/v37/i07/",
+
+  textVersion  =
+  paste("Carla Moreira, Jacobo de Uña-Álvarez, Rosa Crujeiras (2010).",
+        "DTDA: An R Package to Analyze Randomly Truncated Data.",
+        "Journal of Statistical Software, 37(7), 1-20.",
+        "URL http://www.jstatsoft.org/v37/i07/.")
+)
+
