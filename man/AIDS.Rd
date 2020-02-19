@@ -1,7 +1,7 @@
 \name{AIDS}
 \alias{AIDS}
 \docType{data}
-\title{ Time to AIDS
+\title{Time to AIDS
 }
 \description{
 The data
@@ -25,7 +25,7 @@ from the date of infection.
 %}
 \source{
 %%  ~~ reference to a publication or URL from which the data were obtained ~~
-J.P. Klein and M.L.Moeschberger. 
+J.P. Klein and M.L.Moeschberger.
 }
 \references{
 Lagakos SW and Barraj LM and de Gruttola V (1988) Nonparametric Analysis of Truncated Survival

@@ -1,14 +1,13 @@
-\encoding{latin1}
+%\encoding{latin1}
 \name{DTDA-package}
 \alias{DTDA-package}
-\alias{DTDA}
 \docType{package}
 \title{
 Doubly truncated data analysis
 }
 \description{
-This package implements different algorithms for analyzing randomly truncated data, one-sided and two-sided (i.e. doubly) truncated data. 
-It incorporates the iterative methods introduced by \cite{Efron and Petrosian (1999)} and \cite{Shen (2008)}.
+This package implements different algorithms for analyzing randomly truncated data, one-sided and two-sided (i.e. doubly) truncated data.
+It incorporates the iterative methods introduced by Efron and Petrosian (1999) and Shen (2008).
 Estimation of the lifetime distribution function and truncation times distributions is possible, together with the corresponding pointwise confidence limits based on bootstrap methods.
 Plots of cumulative distributions and survival functions are provided. Two real data sets are included: right-truncated
 AIDS data and doubly truncated data on quasar luminosities.
@@ -17,16 +16,16 @@ AIDS data and doubly truncated data on quasar luminosities.
 \tabular{ll}{
 Package: \tab DTDA\cr
 Type: \tab Package\cr
-Version: \tab 2.1-1\cr
+Version: \tab 2.1-2\cr
 Date: \tab 2010-11-14\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
-Missing data are allowed. Registries with missing data are simply removed. This package incorporates the functions \code{efron.petrosian}, \code{lynden} and \code{ shen}, which call the iterative methods introduced by \cite{Efron and Petrosian (1999)} and \cite{Shen (2008)}.
+Missing data are allowed. Registries with missing data are simply removed. This package incorporates the functions \code{efron.petrosian}, \code{lynden} and \code{ shen}, which call the iterative methods introduced by Efron and Petrosian (1999) and Shen (2008).
 
 For a complete list of functions, use \code{library(help="DTDA").} }
 \author{
-Carla Moreira, Jacobo de UÒa-¡lvarez and Rosa Crujeiras
+Carla Moreira, Jacobo de U√±a-√Ålvarez and Rosa Crujeiras
 
 Maintainer: Carla Moreira \email{carlamgmm@gmail.com}
 }
@@ -37,7 +36,7 @@ Lynden-Bell, D. (1971) A method of allowing for known observational selection in
 
 Shen, P-S. (2008) Nonparametric analysis of doubly truncated data. \emph{Annals of the Institute of Statistical Mathematics} DOI 10.1007/s10463-008-0192-2.
 }
-\keyword{ iteration} 
+\keyword{ iteration}
 \keyword{ nonparametric}
 
 \section{Acknowledgements}{ Work supported by the research grants MTM 2008-02139 and MTM 2008-0310 of the Spanish Ministry of Science and Innovation, and Xunta de

@@ -111,12 +111,12 @@ indbbv<-seq(1,nrow(C),by=1)
 
 
 
-kMUV<-cbind(U,V,k)
+kMUV<-cbind(C[,2],C[,3],k)##
 
 ordUV<-order(kMUV[,1])
 kMUV[,1]<-sort(kMUV[,1])
 kMUV[,2]<-kMUV[ordUV,2]
-
+kMUV[,3]<-kMUV[ordUV,3]###
 
 kuv<-numeric(nrow(C))
 for(i in 1:nrow(kMUV)){
@@ -146,7 +146,7 @@ if(aux8==2) mult8[i]<-mult8[i]+1
 FKval<- (weigth8)}
 
 
-kMU<-cbind(U,k)
+kMU<-cbind(C[,2],k)##
 ordU<-order(kMU[,1])
 kMU[,1]<-sort(kMU[,1])
 kMU[,2]<-kMU[ordU,2]
@@ -176,7 +176,7 @@ UU<-unique(kMU[,1])
 fU<-cumsum(fUval)
 
 
-kMV<-cbind(V,k)
+kMV<-cbind(C[,3],k)
 ordV<-order(kMV[,1])
 kMV[,1]<-sort(kMV[,1])
 kMV[,2]<-kMV[ordV,2]
@@ -204,7 +204,7 @@ VV<-unique(kMV[,1])
 fV<-cumsum(fVval)
 
 ordUV<-order(kMUV[,1])
-EE[,1]<-X[ordUV]
+EE[,1]<-C[ordUV,1] ###
 
 
 KKG<-matrix(data=0, ncol=1, nrow=nrow(EE))
@@ -303,7 +303,7 @@ indbbb<-seq(1,nrow(C),by=1)
 indbb9<-seq(1,nrow(C),by=1)
 
 
-kMU<-cbind(U,k)
+kMU<-cbind(C[,2],k)##
 ordU<-order(kMU[,1])
 kMU[,1]<-sort(kMU[,1])
 kMU[,2]<-kMU[ordU,2]
@@ -368,7 +368,7 @@ indbbb<-seq(1,nrow(C),by=1)
 indbb9<-seq(1,nrow(C),by=1)
 
 
-kMV<-cbind(V,k)
+kMV<-cbind(C[,3],k)##
 ordV<-order(kMV[,1])
 kMV[,1]<-sort(kMV[,1])
 kMV[,2]<-kMV[ordV,2]

@@ -1,4 +1,4 @@
-\encoding{latin1}
+%\encoding{latin1}
 \name{lynden}
 \alias{lynden}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -10,7 +10,7 @@ It provides bootstrap pointwise confidence limits too.
 }
 \usage{
 lynden(X, U = NA, V = NA, error = NA, nmaxit = NA,
-		 boot = TRUE, B = NA, alpha = NA, 
+		 boot = TRUE, B = NA, alpha = NA,
 			display.F = FALSE, display.S = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -30,7 +30,7 @@ lynden(X, U = NA, V = NA, error = NA, nmaxit = NA,
 
 }
 \details{
-  The NPMLE of the lifetime is computed by the second algorithm proposed in \cite{Efron and Petrosian (1999)}. This is an alternative algorithm which converges to the 
+  The NPMLE of the lifetime is computed by the second algorithm proposed in Efron and Petrosian (1999). This is an alternative algorithm which converges to the
 NMPLE after a number of iterations.
 If the second (respectively third) argument is missing, computation of the Lynden-Bell estimator for right-truncated (respectively left-truncated)
  data is obtained.
@@ -43,7 +43,7 @@ A list containing the following values:
 
   \item{time }{The timepoint on the curve. }
   \item{n.event }{The number of events that ocurred at time \code{t}. }
-  \item{events}{The total number of events. }	
+  \item{events}{The total number of events. }
   \item{NJ }{The number of individuals in risk considering the left truncation times. }
   \item{density }{The estimated density values. }
   \item{cumulative.df }{The estimated cumulative distribution values. }
@@ -63,7 +63,7 @@ A list containing the following values:
 
 Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.}
 
-\author{ Carla Moreira, Jacobo de UÒa-¡lvarez and Rosa Crujeiras }
+\author{ Carla Moreira, Jacobo de U√±a-√Ålvarez and Rosa Crujeiras }
 
 \seealso{\code{\link{efron.petrosian}} }
 \examples{

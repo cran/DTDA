@@ -1,5 +1,5 @@
-# Default NAMESPACE created by R
-# Remove the previous line if you edit this file
-
-# Export all names
-exportPattern(".")
+exportPattern("^[[:alpha:]]+")
+importFrom("grDevices", "dev.new", "rainbow", "topo.colors")
+    importFrom("graphics", "filled.contour", "image", "par", "persp",
+               "plot", "segments")
+    importFrom("stats", "runif")

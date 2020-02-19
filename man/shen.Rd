@@ -1,4 +1,4 @@
-\encoding{latin1}
+%\encoding{latin1}
 \name{shen}
 \alias{shen}
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -12,7 +12,7 @@ It provides bootstrap pointwise confidence limits too.
 \usage{
 shen(X, U = NA, V = NA, wt = NA, error = NA,
 	 nmaxit = NA, boot = TRUE, boot.type = "simple",
-		 B = NA, alpha = NA, display.FS = FALSE, 
+		 B = NA, alpha = NA, display.FS = FALSE,
 			display.UV = FALSE, plot.joint = FALSE, plot.type = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -29,13 +29,13 @@ shen(X, U = NA, V = NA, wt = NA, error = NA,
    \item{B}{ Numeric value. Number of bootstrap resamples . The default \code{NA} is equivalent to \code{B} =500 . }
    \item{alpha}{ Numeric value. (1-\code{alpha}) is the nominal coverage for the pointwise confidence intervals. }
     \item{display.FS}{ Logical. Default is FALSE. If TRUE, the estimated cumulative distribution function and the estimated survival function associated to \code{X}, (F) and (S) respectively, are plotted.   }
-  \item{display.UV}{ Logical. Default is FALSE. If TRUE, the marginal distributions of \code{U} \code{(fU)} and \code{V} \code{(fV)}, are plotted.} 
+  \item{display.UV}{ Logical. Default is FALSE. If TRUE, the marginal distributions of \code{U} \code{(fU)} and \code{V} \code{(fV)}, are plotted.}
   \item{plot.joint}{ Logical. Default is FALSE. If TRUE, the joint distribution of the truncation times is plotted. }
-  \item{plot.type}{ A character string giving the plot type to be used to represent the joint distribution of the truncation times. 
+  \item{plot.type}{ A character string giving the plot type to be used to represent the joint distribution of the truncation times.
  This must be one of "image" or "persp", with default \code{NULL}. }
 }
 \details{
-   The NPMLE of the lifetime is computed by a single algorithm proposed in Shen (2008). This is an alternative algorithm which converges to the 
+   The NPMLE of the lifetime is computed by a single algorithm proposed in Shen (2008). This is an alternative algorithm which converges to the
 NMPLE after a number of iterations. Initial solutions are given by the ordinary empirical distribution functions.
 If the second (respectively third) argument is missing, computation of the Lynden-Bell estimator for right-truncated (respectively left-truncated)
  data is obtained.
@@ -47,7 +47,7 @@ A list containing the following values:
 
  \item{time }{The timepoint on the curve. }
  \item{n.event }{The number of events that ocurred at time \code{t}. }
- \item{events}{The total number of events. }	
+ \item{events}{The total number of events. }
  \item{density }{The estimated density values associated to \code{X}. }
  \item{cumulative.df }{The estimated cumulative distribution values of \code{X}. }
  \item{truncation.probs }{The probabilities of truncation values, in each region. }
@@ -79,7 +79,7 @@ Shen, P-S. (2008) Nonparametric analysis of doubly truncated data. \emph{Annals 
 
 }
 
-\author{ Carla Moreira, Jacobo de UÒa-¡lvarez and Rosa Crujeiras }
+\author{ Carla Moreira, Jacobo de U√±a-√Ålvarez and Rosa Crujeiras }
 
 \seealso{\code{\link{lynden}} }
 \examples{
