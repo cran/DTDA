@@ -30,7 +30,7 @@ lynden(X, U = NA, V = NA, error = NA, nmaxit = NA,
 
 }
 \details{
-  The NPMLE of the lifetime is computed by the second algorithm proposed in Efron and Petrosian (1999). This is an alternative algorithm which converges to the
+  The NPMLE of the lifetime is computed by the second algorithm proposed in \cite{Efron and Petrosian (1999)}. This is an alternative algorithm which converges to the
 NMPLE after a number of iterations.
 If the second (respectively third) argument is missing, computation of the Lynden-Bell estimator for right-truncated (respectively left-truncated)
  data is obtained.
@@ -58,10 +58,12 @@ A list containing the following values:
   \item{lower.df }{The estimated lower limits of the confidence intervals for F. }
   \item{upper.Sob }{The estimated upper limits of the confidence intervals for S. }
   \item{lower.Sob }{The estimated lower limits of the confidence intervals for S. }
+   \item{sd.boot }{The bootstrap standard deviation.}
+\item{ Boot.Repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
 }
-\references{ Efron, B. and Petrosian, V.(1999) Nonparametric methods for doubly truncated data. \emph{Journal of the American Statistical Association} \bold{94}, 824-834.
+\references{ Efron B and Petrosian V (1999) Nonparametric methods for doubly truncated data. \emph{Journal of the American Statistical Association} \bold{94}, 824-834.
 
-Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.}
+Lynden-Bell D (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.}
 
 \author{ Carla Moreira, Jacobo de Uña-Álvarez and Rosa Crujeiras }
 

@@ -1,5 +1,9 @@
 exportPattern("^[[:alpha:]]+")
 importFrom("grDevices", "dev.new", "rainbow", "topo.colors")
-    importFrom("graphics", "filled.contour", "image", "par", "persp",
-               "plot", "segments")
-    importFrom("stats", "runif")
+importFrom("graphics", "filled.contour", "image", "par", "persp", "plot", "segments")
+importFrom("stats", "dnorm", "integrate", "rnorm", "runif", "sd", "var")
+importFrom("stats", "runif")
+importFrom("foreach","%dopar%","foreach")
+importFrom("doParallel","registerDoParallel")
+importFrom("parallel","detectCores", "makeCluster","stopCluster")
+importFrom("utils", "install.packages")

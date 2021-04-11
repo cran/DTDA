@@ -5,60 +5,92 @@ display.S=FALSE){
 
 
 
-trunc<-"double"
 
-if(all(is.na(U))==TRUE){
+# set truncation both side by default
+    trunc <- "double"
 
-trunc<-"right"
-cat("case U=NA","\n")
-if(any(is.na(V))==TRUE|any(is.na(X))==TRUE){
-navec<-c(which(is.na(X)),which(is.na(V)))
-X<-X[-navec]
-V<-V[-navec]
-}}
-if(all(is.na(V))==TRUE){
+    # analize if we have a NA and remove then
+    if (all(is.na(U)) == TRUE) {
+      trunc <- "right"
+      cat("case U=NA","\n")
 
-trunc<-"left"
-cat("case V=NA","\n")
-if(any(is.na(U))==TRUE|any(is.na(X))==TRUE){
-navec<-c(which(is.na(X)),which(is.na(U)))
-X<-X[-navec]
-U<-U[-navec]
-}}
+      if (any(is.na(V)) == TRUE | any(is.na(X)) == TRUE) {
+        navec <- c(which(is.na(X)), which(is.na(V)))
+        X <- X[-navec]
+        V <- V[-navec]
+      }
+    }
 
-if(trunc=="double"){
-if(any(is.na(U))==TRUE | any(is.na(V))==TRUE|any(is.na(X))==TRUE){
 
-navec<-c(which(is.na(X)),which(is.na(U)),which(is.na(V)))
-X<-X[-navec]
-U<-U[-navec]
-V<-V[-navec]
+    # check for NA in the resulting vector
+    if (all(is.na(V)) == TRUE) {
+      trunc <- "left"
+      cat("case V=NA","\n")
 
-}}
 
-D<-cbind(X,U,V)
+      if (any(is.na(U)) == TRUE | any(is.na(X)) == TRUE) {
+        navec <- c(which(is.na(X)), which(is.na(U)))
+        X <- X[-navec]
+        U <- U[-navec]
+      }
+    }
 
-if(all(is.na(U))==TRUE){
-D[,2]<--D[,3]
-D[,1]<--D[,1]
-D[,3]<-rep(max(D[,1])+1,length(X))
-}
-if(all(is.na(V))==TRUE){
-D[,3]<-rep(max(D[,1])+1,length(X))
-}
 
-ord<-order(D[,1])
-C<-matrix(0,nrow=nrow(D),ncol=ncol(D))
-C[,1]<-sort(D[,1])
-C[,2:ncol(D)]<-D[ord,2:ncol(D)]
+    # if trunccation is set both sides prepare the arrays
+    if (trunc == "both") {
+      if (any(is.na(U)) == TRUE |
+          any(is.na(V)) == TRUE | any(is.na(X)) == TRUE) {
+        navec <- c(which(is.na(X)), which(is.na(U)), which(is.na(V)))
+        X <- X[-navec]
+        U <- U[-navec]
+        V <- V[-navec]
+      }
+    }
 
+    D <- cbind(X, U, V) # concatenate them into D
+
+    if (all(is.na(V)) == TRUE)
+      D[, 3] <- rep(max(D[, 1]) + 1, length(X))
+
+    if (all(is.na(U)) == TRUE) {
+      D[, 2] <- rep(min(D[, 1]) - 1, length(X))
+      D[, 1] <- D[, 1]
+      D[, 3] <- D[, 3]
+    }
+
+
+    # preallocation
+    C <- matrix(0, nrow = nrow(D), ncol = ncol(D))
+    EE <- matrix(0, nrow = nrow(D), ncol = ncol(D))
+
+    ########################################
+    # ordenaçao or ordering zone
+    ########################################
+
+      ord <- order(D[, 1], method = "auto")
+      C[, 1] <- sort(D[, 1], method = "auto")
+      C[, 2:ncol(D)] <-
+      D[ord, 2:ncol(D)] # use the ordered indeces for ordering
+
+	T<-table(C[,2]<= C[,1]&C[,1]<=C[,3])
+	if(length(T)!=1){
+	stop("Condition of double truncation is violated","\n")
+	}
 
 NJ<-matrix(data=0,ncol=1,nrow=nrow(C))
 K<-NJ
-for(j in 1:nrow(C)){
-for(k in 1:nrow(C)){
-if (C[k,2]<=C[j,1]& C[k,1]>=C[j,1]) {NJ[j,1]<-NJ[j,1]+1}
-}}
+
+
+#for(j in 1:nrow(C)){
+#for(k in 1:nrow(C)){
+#if (C[k,2]<=C[j,1]& C[k,1]>=C[j,1]) {NJ[j,1]<-NJ[j,1]+1}
+#}}
+
+ar1<-outer(C[, 2], C[, 1], "<=")
+ar2<-outer(C[, 1], C[, 1], ">=")
+
+AZ<-ar1*ar2
+NJ<-as.matrix(colSums(AZ))
 K[,1]<-rep(1,length=nrow(C))
 
 
@@ -72,13 +104,25 @@ if(istar<nrow(C)){K[(istar+1):nrow(C),1]<-NJ[(istar+1):nrow(C),1]}
 NJ<-as.matrix(apply(cbind(NJ,K),1,max),ncol=1)
 
 
-J<-matrix(data=0,ncol=nrow(C),nrow=nrow(C))
-for (k in 1:nrow(C)){
-for(j in 1:nrow(C)) {
-a1<-min(C[j,2],C[j,3])
-b1<-max(C[j,2],C[j,3])
-if(C[k,1]>=a1 & C[k,1]<=b1) J[k,j]<-1
-}}
+#J<-matrix(data=0,ncol=nrow(C),nrow=nrow(C))
+#for (k in 1:nrow(C)){
+#for(j in 1:nrow(C)) {
+#a1<-min(C[j,2],C[j,3])
+#b1<-max(C[j,2],C[j,3])
+#if(C[k,1]>=a1 & C[k,1]<=b1) J[k,j]<-1
+#}}
+
+au <- outer(C[, 1], C[, 2], ">=")
+av <- outer(C[, 1], C[, 3], "<=")
+auu <- outer(C[, 2], C[, 2], "<=") * 1L
+
+J <- au * av
+SC <- colSums(J)
+ad <- length(which(SC == 1))
+if (ad != 0) {
+#if (my_debug)
+ cat("Warning. Non-uniqueness or no existence of the NPMLE", "\n")
+    }
 h0<-1/NJ
 
 
@@ -113,7 +157,7 @@ h[i,]<- 1/(NJ[i,]+(J[i,])%*%Q0)
 S0<-1
 if(is.na(error)==TRUE) error<-1e-6
 
-if(is.na(nmaxit)==TRUE)nmaxit<-100
+if(is.na(nmaxit)==TRUE)nmaxit<-1000000
 iter<-0
 
 while(S0>error|iter>nmaxit){
@@ -203,50 +247,100 @@ hval<- (weigth5)}
 x<-unique(C[,1])
 events<-sum(mult4)
 n.event<-mult4
-f<-Fval
-h<-hval
-FF<-cumsum(f)
-Sob<-1-FF+f
-Sob[Sob<1e-12]<-0
+#f<-Fval
+#h<-hval
+FF<-cumsum(Fval)
+FFF<-cumsum(f) # do cumsum without ties
+    Sob <- 1 - FF + Fval
+    Sob[Sob < 1e-12] <- 0
+    Sob0<-1-FFF
+	Sob[Sob<1e-12]<-0
+	Sob0[Sob0<1e-12]<-0
 
 
 
 if (boot==TRUE){ 
+
+
 if (is.na(B)==TRUE) B<-500
-
-if(trunc=="double"|trunc=="left"){
-
-
-M_IF0<-matrix(0,nrow=nrow(C),ncol=B)
-M_IF01<-matrix(0,nrow=nrow(C),ncol=B)
-M_IF0Sob<-matrix(0,nrow=nrow(C),ncol=B)
-ind<-seq(1,nrow(C),by=1)
-indbb<-seq(1,nrow(C),by=1)
-indbb1<-seq(1,nrow(C),by=1)
-
-
 if(B<40){
 cat("Warning. Number of replicates less than 40","\n")
 cat("Confidence bands cannot be computed","\n")
 }
 
 
+if(trunc=="double"|trunc=="left"){
 
-for (b in 1:B){
+########################################
+          # PARALELL BOOTSTARP BOTH
+          ########################################
+          if(!requireNamespace("foreach")){
+			install.packages("foreach")
 
-indb<-sample(ind,nrow(C),replace=TRUE)
-M1b<-C[indb,]
-M2b<-matrix(0,nrow=nrow(M1b),ncol=ncol(M1b))
-ord<-order(M1b[,1])
-M2b[,1]<-sort(M1b[,1])
-M2b[,2:ncol(M1b)]<-M1b[ord,2:ncol(M1b)]
+			}
 
-NJb<-matrix(data=0,ncol=1,nrow=nrow(C))
-Kb<-NJb
-for(j in 1:nrow(C)){
-for(k in 1:nrow(C)){
-if (M2b[k,2]<=M2b[j,1]& M2b[k,1]>=M2b[j,1]) {NJb[j,1]<-NJb[j,1]+1}
-}}
+		if(!requireNamespace("doParallel")){
+			install.packages("doParallel")
+
+			}
+
+			cores=detectCores()
+			if (cores[1] > 1) cl <- makeCluster(cores[1]-1, type = "PSOCK")
+			else cl <- makeCluster(cores[1], type = "PSOCK")
+			registerDoParallel(cl)
+          ########################################
+          # Start of parallel state both 500 iteractions B = 500
+			final_boot <- foreach(i=1:B, .combine='rbind') %dopar% {
+            # dont forget to put code repeat
+
+            ## Preallocation Local to the core (no B indexing)
+            #preallocate out internal matrices and variables (each core must have its own copy) no B
+
+            n_sampling_tries <- 0
+			# container for bootstrap operations
+            M1b <- matrix(0, nrow = nrow(C), ncol = ncol(C)) # usado dentro do loop
+            M2b <- matrix(0, nrow = nrow(C), ncol = ncol(C)) # usado dentro do loop
+            # container for bootstrap operations
+			M_IF0<-matrix(0,nrow=nrow(C))
+			M_IF01<-matrix(0,nrow=nrow(C))
+			M_IF0Sob<-matrix(0,nrow=nrow(C))
+			ind<-seq(1,nrow(C),by=1)
+			indbb<-seq(1,nrow(C),by=1)
+			indbb1<-seq(1,nrow(C),by=1)
+
+
+
+			# repeat sample if condition not met
+            repeat{
+              # get the sample
+              indb <- sample(ind, nrow(C), replace = TRUE)
+              M1b <- C[indb,]
+
+              ########################################
+              # ordenaçao or ordering zone
+              ########################################
+              ord <- order(M1b[, 1], method = "auto")
+              M2b[, 1] <- sort(M1b[, 1], method = "auto")
+
+              M2b[, 2:ncol(M1b)] <- M1b[ord, 2:ncol(M1b)]
+			NJb<-matrix(data=0,ncol=1,nrow=nrow(C))
+			Kb<-NJb
+
+
+#for(j in 1:nrow(C)){
+#for(k in 1:nrow(C)){
+#if (M2b[k,2]<=M2b[j,1]& M2b[k,1]>=M2b[j,1]) {NJb[j,1]<-NJb[j,1]+1}
+#}}
+
+ar1b<-outer(M2b[, 2], M2b[, 1], "<=")
+ar2b<-outer(M2b[, 1], M2b[, 1], ">=")
+
+AZb<-ar1b*ar2b
+NJb<-as.matrix(colSums(AZb))
+
+
+
+
 Kb[,1]<-rep(1,length=nrow(C))
 
 
@@ -260,13 +354,35 @@ if(istarb<nrow(M2b)){Kb[(istarb+1):nrow(M2b),1]<-NJb[(istarb+1):nrow(M2b),1]}
 NJb<-as.matrix(apply(cbind(NJb,Kb),1,max),ncol=1)
 
 
-Jb<-matrix(data=0,ncol=nrow(M2b),nrow=nrow(M2b))
-for (k in 1:nrow(M2b)){
-for(j in 1:nrow(M2b)) {
-a2<-min(M2b[j,2],M2b[j,3])
-     b2<-max(M2b[j,2],M2b[j,3])
-if(M2b[k,1]>=a2 & M2b[k,1]<=b2) Jb[k,j]<-1
-}}
+
+              # preallocate
+              Jb <- matrix(data = 0,ncol = nrow(M2b), nrow = nrow(M2b))
+				aub <- outer(M2b[, 1], M2b[, 2], ">=")
+              avb <- outer(M2b[, 1], M2b[, 3], "<=")
+              auub <- outer(M2b[, 2], M2b[, 2], "<=") * 1L
+              Jb <- aub * avb
+              #SCb <- apply(Jb, 2, "sum")
+			  SCb <-colSums(Jb)
+              adb <- length(which(SCb == 1))
+
+              n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
+
+            # if the condition is set, we break the repat, otherwise repeat sampling  process
+            if (adb == 0)
+              break
+            else
+              cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
+            }
+            ## End os sample repeat
+
+#Jb<-matrix(data=0,ncol=nrow(M2b),nrow=nrow(M2b))
+#for (k in 1:nrow(M2b)){
+#for(j in 1:nrow(M2b)) {
+#a2<-min(M2b[j,2],M2b[j,3])
+#     b2<-max(M2b[j,2],M2b[j,3])
+#if(M2b[k,1]>=a2 & M2b[k,1]<=b2) Jb[k,j]<-1
+#}}
+
 h0b<-1/NJb
 
 G0b<-matrix(data=0,ncol=1,nrow=nrow(C))
@@ -276,7 +392,8 @@ G0b[j,1]<-exp(sum(log(1-h0b[1:(j-1),1])))
 }
 f0b<-matrix(data=G0b[nrow(C),1],ncol=1,nrow=nrow(C))
 for(j in 1:nrow(C)-1){
-f0[j,1]<-(G0b[j,1]-G0b[j+1,1])
+#f0[j,1]<-(G0b[j,1]-G0b[j+1,1])
+f0b[j,1]<-(G0b[j,1]-G0b[j+1,1])
 }
 Gvi0b<-matrix(data=0,ncol=1, nrow=nrow(C))
 for(j in 1:nrow(C)){
@@ -358,45 +475,127 @@ Sobb<-1-FF0b+ff0b
 Sobb[Sobb<1e-12]<-0
 
 
-M_IF0[,b]<-as.vector(FF0b)
-M_IF01[,b]<-as.vector(ff0b)
-M_IF0Sob[,b]<-as.vector(Sobb)
+Sobb <- 1 - FF0b + ff0b
+            Sobb[Sobb < 1e-12] <- 0
+
+            # SAVE start saving stufs (before indexed to b index)
+            M_IF0 <- as.vector(FF0b)
+            M_IF01 <- as.vector(ff0b)
+            M_IF0Sob <- as.vector(Sobb)
+
+			return(list( M_IF0, M_IF01, M_IF0Sob, n_sampling_tries))
+
+          # End of parallel state both
+          ########################################
+          }
+          #stop cluster
+          stopCluster(cl)
+
+          # computation of the B aggegated results r comes as a list concatenated as row (thsi enables any size lists)
+
+          # preallocate the original ones as matrix a,d put the list indexing
+          ############################################
+          n_sampling_tries <- 0
+          M_IF0 <- matrix(0, nrow = nrow(C), ncol = B)
+          M_IF01 <- matrix(0, nrow = nrow(C), ncol = B)
+          M_IF0Sob <- matrix(0, nrow = nrow(C), ncol = B)
+          stderror<-matrix(0, nrow = nrow(C), ncol = 1)
+		  BootRepeat<-matrix(0,ncol=B)
+          ###########################################
+
+          ###########################################
+          # Now convert back to the indices from the array list of
+          # TODO
+          ###########################################
+
+          	for(b in 1:B){
+			M_IF0[,b]<-as.numeric(unlist(final_boot[b,1]))
+			M_IF01[,b]<-as.numeric(unlist(final_boot[b,2]))
+			M_IF0Sob[,b]<-as.numeric(unlist(final_boot[b,3]))
+			BootRepeat[,b]<-as.numeric((unlist(final_boot[b,4])))
+			}
+
+		  stderror<-apply(M_IF0,1,sd)
+
 }
-}
+
 
 
 if(trunc=="right"){
 
-M_IF0<-matrix(0,nrow=nrow(C),ncol=B)
-M_IF01<-matrix(0,nrow=nrow(C),ncol=B)
-M_IF0Sob<-matrix(0,nrow=nrow(C),ncol=B)
-ind<-seq(1,nrow(C),by=1)
-indbb2<-seq(1,nrow(C),by=1)
-indbbb<-seq(1,nrow(C),by=1)
 
-if(B<40){
-cat("Warning. Number of replicates less than 40","\n")
-cat("Confidence bands cannot be computed","\n")
-}
+########################################
+          # PARALELL BOOTSTARP BOTH
+          ########################################
+          if(!requireNamespace("foreach")){
+			install.packages("foreach")
+
+			}
+
+		if(!requireNamespace("doParallel")){
+			install.packages("doParallel")
+
+			}
+
+			cores=detectCores()
+			if (cores[1] > 1) cl <- makeCluster(cores[1]-1, type = "PSOCK")
+			else cl <- makeCluster(cores[1], type = "PSOCK")
+			registerDoParallel(cl)
+          ########################################
+          # Start of parallel state both 500 iteractions B = 500
+			final_boot <- foreach(i=1:B, .combine='rbind') %dopar% {
+            # dont forget to put code repeat
+
+            ## Preallocation Local to the core (no B indexing)
+            #preallocate out internal matrices and variables (each core must have its own copy) no B
+
+            n_sampling_tries <- 0
+			# container for bootstrap operations
+            M1b <- matrix(0, nrow = nrow(C), ncol = ncol(C)) # usado dentro do loop
+            M2b <- matrix(0, nrow = nrow(C), ncol = ncol(C)) # usado dentro do loop
+            # container for bootstrap operations
+			M_IF0<-matrix(0,nrow=nrow(C))
+			M_IF01<-matrix(0,nrow=nrow(C))
+			M_IF0Sob<-matrix(0,nrow=nrow(C))
+			ind<-seq(1,nrow(C),by=1)
+			indbb2<-seq(1,nrow(C),by=1)
+			indbbb<-seq(1,nrow(C),by=1)
 
 
 
-for (b in 1:B){
+			# repeat sample if condition not met
+            repeat{
+              # get the sample
+              indb <- sample(ind, nrow(C), replace = TRUE)
+              M1b <- C[indb,]
 
+              ########################################
+              # ordenaçao or ordering zone
+              ########################################
+              ord <- order(M1b[, 1], method = "auto")
+              M2b[, 1] <- sort(M1b[, 1], method = "auto")
+				 M2b[, 2:ncol(M1b)] <- M1b[ord, 2:ncol(M1b)]
 
-indb<-sample(ind,nrow(C),replace=TRUE)
-M1b<-C[indb,]
-M2b<-matrix(0,nrow=nrow(M1b),ncol=ncol(M1b))
-ord<-order(M1b[,1])
-M2b[,1]<-sort(M1b[,1])
-M2b[,2:ncol(M1b)]<-M1b[ord,2:ncol(M1b)]
 
 NJb<-matrix(data=0,ncol=1,nrow=nrow(C))
 Kb<-NJb
-for(j in 1:nrow(C)){
-for(k in 1:nrow(C)){
-if (M2b[k,2]<=M2b[j,1]& M2b[k,1]>=M2b[j,1]) {NJb[j,1]<-NJb[j,1]+1}
-}}
+
+
+
+#for(j in 1:nrow(C)){
+#for(k in 1:nrow(C)){
+#if (M2b[k,2]<=M2b[j,1]& M2b[k,1]>=M2b[j,1]) {NJb[j,1]<-NJb[j,1]+1}
+#}}
+
+
+ar1b<-outer(M2b[, 2], M2b[, 1], "<=")
+ar2b<-outer(M2b[, 1], M2b[, 1], ">=")
+
+AZb<-ar1b*ar2b
+NJb<-as.matrix(colSums(AZb))
+
+
+
 Kb[,1]<-rep(1,length=nrow(C))
 
 
@@ -410,13 +609,34 @@ if(istarb<nrow(M2b)){Kb[(istarb+1):nrow(M2b),1]<-NJb[(istarb+1):nrow(M2b),1]}
 NJb<-as.matrix(apply(cbind(NJb,Kb),1,max),ncol=1)
 
 
-Jb<-matrix(data=0,ncol=nrow(M2b),nrow=nrow(M2b))
-for (k in 1:nrow(M2b)){
-for(j in 1:nrow(M2b)) {
-a2<-min(M2b[j,2],M2b[j,3])
-     b2<-max(M2b[j,2],M2b[j,3])
-if(M2b[k,1]>=a2 & M2b[k,1]<=b2) Jb[k,j]<-1
-}}
+
+# preallocate
+              Jb <- matrix(data = 0,ncol = nrow(M2b), nrow = nrow(M2b))
+				aub <- outer(M2b[, 1], M2b[, 2], ">=")
+              avb <- outer(M2b[, 1], M2b[, 3], "<=")
+              auub <- outer(M2b[, 2], M2b[, 2], "<=") * 1L
+              Jb <- aub * avb
+             SCb <-colSums(Jb)
+              adb <- length(which(SCb == 1))
+
+              n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
+
+            # if the condition is set, we break the repat, otherwise repeat sampling  process
+            if (adb == 0)
+              break
+            else
+              cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
+            }
+            ## End os sample repeat
+
+#Jb<-matrix(data=0,ncol=nrow(M2b),nrow=nrow(M2b))
+#for (k in 1:nrow(M2b)){
+#for(j in 1:nrow(M2b)) {
+#a2<-min(M2b[j,2],M2b[j,3])
+#     b2<-max(M2b[j,2],M2b[j,3])
+#if(M2b[k,1]>=a2 & M2b[k,1]<=b2) Jb[k,j]<-1
+#}}
+
 h0b<-1/NJb
 
 G0b<-matrix(data=0,ncol=1,nrow=nrow(C))
@@ -426,7 +646,8 @@ G0b[j,1]<-exp(sum(log(1-h0b[1:(j-1),1])))
 }
 f0b<-matrix(data=G0b[nrow(C),1],ncol=1,nrow=nrow(C))
 for(j in 1:nrow(C)-1){
-f0[j,1]<-(G0b[j,1]-G0b[j+1,1])
+#f0[j,1]<-(G0b[j,1]-G0b[j+1,1])
+f0b[j,1]<-(G0b[j,1]-G0b[j+1,1])
 }
 Gvi0b<-matrix(data=0,ncol=1, nrow=nrow(C))
 for(j in 1:nrow(C)){
@@ -520,30 +741,77 @@ Sobb<-1-FF0b+fb
 Sobb[Sobb<1e-12]<-0
 FF0b[FF0b<1e-12]<-0
 
-M_IF0[,b]<-as.vector(FF0b)
-M_IF01[,b]<-as.vector(fb)
-M_IF0Sob[,b]<-as.vector(Sobb)
+#Sobb <- 1 - FF0b + ff0b
+
+
+            # SAVE start saving stufs (before indexed to b index)
+            M_IF0 <- as.vector(FF0b)
+            M_IF01 <- as.vector(fb)
+            M_IF0Sob <- as.vector(Sobb)
+
+			return(list( M_IF0, M_IF01, M_IF0Sob, n_sampling_tries))
+
+          # End of parallel state both
+          ########################################
+          }
+          #stop cluster
+          stopCluster(cl)
+
+          # computation of the B aggegated results r comes as a list concatenated as row (thsi enables any size lists)
+
+          # preallocate the original ones as matrix a,d put the list indexing
+          ############################################
+          n_sampling_tries <- 0
+          M_IF0 <- matrix(0, nrow = nrow(C), ncol = B)
+          M_IF01 <- matrix(0, nrow = nrow(C), ncol = B)
+          M_IF0Sob <- matrix(0, nrow = nrow(C), ncol = B)
+          stderror<-matrix(0, nrow = nrow(C), ncol = 1)
+		  BootRepeat<-matrix(0,ncol=B)
+          ###########################################
+
+          ###########################################
+          # Now convert back to the indices from the array list of
+          # TODO
+          ###########################################
+
+          	for(b in 1:B){
+			M_IF0[,b]<-as.numeric(unlist(final_boot[b,1]))
+			M_IF01[,b]<-as.numeric(unlist(final_boot[b,2]))
+			M_IF0Sob[,b]<-as.numeric(unlist(final_boot[b,3]))
+			BootRepeat[,b]<-as.numeric((unlist(final_boot[b,4])))
+			}
+
+		  stderror<-apply(M_IF0,1,sd)
+
 
 }
-}
 
 
-M_IF0_sort<-matrix(0,nrow=nrow(C),ncol=B)
-for(i in 1:nrow(M_IF0_sort)){
-M_IF0_sort[i,]<-sort(M_IF0[i,])
-}
-if(is.na(alpha)==TRUE) alpha<-0.05
-lowerF<-M_IF0_sort[,floor(alpha*B/2)]
-upperF<-M_IF0_sort[,floor((1-alpha/2)*B)]
 
-M_IF0_sort1<-matrix(0,nrow=nrow(C),ncol=B)
-for(i in 1:nrow(M_IF0_sort1)){
-M_IF0_sort1[i,]<-sort(M_IF0Sob[i,])
-}
-lowerS<-M_IF0_sort1[,floor(alpha*B/2)]
-upperS<-M_IF0_sort1[,floor((1-alpha/2)*B)]
+# this is same as before
+          M_IF0_sort <- matrix(0, nrow = nrow(C), ncol = B)
+          for (i in 1:nrow(M_IF0_sort)) {
+            M_IF0_sort[i,] <- sort(M_IF0[i,])
+          }
 
-} 
+          if (is.na(alpha) == TRUE)
+            alpha <- 0.05
+
+          lowerF <- M_IF0_sort[, floor(alpha * B / 2)]
+          upperF <- M_IF0_sort[, floor((1 - alpha / 2) *
+                                         B)]
+          M_IF0_sort1 <- matrix(0, nrow = nrow(C), ncol = B)
+          for (i in 1:nrow(M_IF0_sort1)) {
+            M_IF0_sort1[i,] <- sort(M_IF0Sob[i,])
+          }
+
+          lowerS <- M_IF0_sort1[, floor(alpha * B / 2)]
+          upperS <- M_IF0_sort1[, floor((1 - alpha / 2) * B)]
+
+ 
+ }       ##############################
+        # end of bootstrap trucn BOTH
+        ##############################
 
 
 
@@ -552,20 +820,20 @@ if(boot==TRUE){
 if(trunc=="double"|trunc=="left"){
 
 if((display.F==TRUE)&(display.S==TRUE)){
-
+x<-C[,1]
 dev.new()
 par(mfrow=c(1,2))
 
 
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
 
@@ -593,12 +861,12 @@ plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-mi
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
 
 segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
@@ -627,15 +895,15 @@ segments(C[i+1,1],lowerS[i],C[i+1,1],lowerS[i+1],lty=3)
 
 if((display.S==FALSE)&(display.F==TRUE)){
 dev.new()
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
 
@@ -661,16 +929,16 @@ segments(C[i+1,1],lowerF[i],C[i+1,1],lowerF[i+1],lty=3)
 
 if((display.F==FALSE)&(display.S==TRUE)){
 dev.new()
-plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
 
 segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
@@ -695,8 +963,9 @@ segments(C[i+1,1],lowerS[i],C[i+1,1],lowerS[i+1],lty=3)
 
 if(trunc=="right"){
 
-x<--unique(C[,1])
-f<-Fval
+#x<--unique(C[,1])
+x<--C[,1]
+#f<-Fval
 
 
 ord1<-order(x)
@@ -705,11 +974,14 @@ mult4<-mult4[ord1]
 n.event<-mult4
 
 f<-f[ord1]
-FF<-cumsum(f)
+FF<-cumsum(Fval)
+FFF<-cumsum(f)
 
-FF[FF<1e-12]<-0
-Sob<-1-FF+f
-h<-f/Sob
+
+FFF[FFF<1e-12]<-0
+Sob<-1-FF+Fval
+Sob0<-1-FFF+f
+h<-f/Sob0
 
 
 if((display.F==TRUE)&(display.S==TRUE)){
@@ -719,15 +991,15 @@ par(mfrow=c(1,2))
 
 C[,1]<--C[order(-C[,1])]
 
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
 
@@ -751,17 +1023,17 @@ segments(C[,1][i+1],lowerF[i],C[,1][i+1],lowerF[i+1],lty=3)
 }
 
 
-plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
 
 segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -791,16 +1063,16 @@ segments(C[,1][i+1],lowerS[i],C[,1][i+1],lowerS[i+1],lty=3)
 if((display.F==FALSE)&(display.S==TRUE)){
 dev.new()
 par(mfrow=c(1,1))
-plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
 
 segments(min(-C[order(-C[,1])])-(max(-C[order(-C[,1])])-min(-C[order(-C[,1])]))/length(C[,1]),1,-C[order(-C[,1])][1],1,lty=3)
@@ -826,15 +1098,15 @@ segments(-C[order(-C[,1])][i+1],lowerS[i],-C[order(-C[,1])][i+1],lowerS[i+1],lty
 if((display.F==TRUE)&(display.S==FALSE)){
 dev.new()
 par(mfrow=c(1,1))
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
 
@@ -863,36 +1135,36 @@ segments(-C[order(-C[,1])][i+1],lowerF[i],-C[order(-C[,1])][i+1],lowerF[i+1],lty
 }
 if (boot==FALSE|B<40){
 
-
+x<-C[,1]
 if(trunc=="double"|trunc=="left"){
 
 if((display.F==TRUE)&(display.S==TRUE)){
 
 dev.new()
 par(mfrow=c(1,2))
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
 
 
 
-plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
 
 }
@@ -901,30 +1173,30 @@ segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
 
 if((display.S==FALSE)&(display.F==TRUE)){
 dev.new()
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
 }
 
 if((display.F==FALSE)&(display.S==TRUE)){
 dev.new()
-plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
 
 
@@ -933,46 +1205,49 @@ segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
 
 if(trunc=="right"){
 
-x<--unique(C[,1])
+#x<--unique(C[,1])
+x<--C[,1]
 events<-sum(mult4)
 n.event<-mult4
-f<-Fval
+#f<-Fval
 
 ord1<-order(x)
 x<-sort(x)
 mult4<-mult4[ord1]
 n.event<-mult4
 f<-f[ord1]
-FF<-cumsum(f)
-Sob<-1-FF+f
-h<-f/Sob
-Sob[Sob<1e-12]<-0
-FF[FF<1e-12]<-0
+FF<-cumsum(Fval)
+FFF<-cumsum(f)
+Sob<-1-FF+Fval
+Sob0<-1-FF+f
+h<-f/Sob0
+Sob0[Sob<1e-12]<-0
+FFF[FFF<1e-12]<-0
 
 
 if((display.F==TRUE)&(display.S==TRUE)){
 dev.new()
 par(mfrow=c(1,2))
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
-plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
 
 
@@ -983,31 +1258,31 @@ if((display.F==FALSE)&(display.S==TRUE)){
 dev.new()
 
 par(mfrow=c(1,1))
-plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-segments(max(x),0,max(x),min(Sob))
+segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob[i],x[i+1],Sob[i])
-segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
+segments(x[i],Sob0[i],x[i+1],Sob0[i])
+segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 }
  }
 
 if((display.F==TRUE)&(display.S==FALSE)){
 dev.new()
 par(mfrow=c(1,1))
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FF[1])
+segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FF[i],x[i+1],FF[i])
-segments(x[i+1],FF[i],x[i+1],FF[i+1])
+segments(x[i],FFF[i],x[i+1],FFF[i])
+segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
  }
 
@@ -1023,14 +1298,9 @@ if(boot==TRUE){
  cat("B",B,"\n")
  cat("alpha",alpha,"\n")
 
-summary<-cbind("time"=x,"n.event"=mult4,"density"=round(f,5),"cumulative.df"=round(FF,5),"survival"=round(Sob,5), "hazard"=round(h,5))
-
-colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival", "hazard")
-rownames(summary)<-rep("",times=length(x))
-print(summary,digits=5, justify="left")
-return(invisible(list(n.iterations=iter, events=events, B=B, alpha=alpha,time=x, n.event=mult4, density=round(as.vector(f),5), cumulative.df=round(FF,5), survival=
-round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5), hazard=round(as.vector(h),5), NJ=as.vector(NJ), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
-lower.Sob=round(lowerS,5))))
+return(invisible(list(n.iterations=iter, events=events, B=B, alpha=alpha,time=C[,1], n.event=mult4, density=round(as.vector(f),5), cumulative.df=round(FFF,5), survival=
+round(as.vector(Sob0),5), truncation.probs=round(as.vector(F0),5), hazard=round(as.vector(h),5), NJ=as.vector(NJ), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
+lower.Sob=round(lowerS,5),sd.boot=round(stderror,5),Boot.Repeat=as.vector(BootRepeat))))
 
 
 
@@ -1038,13 +1308,8 @@ lower.Sob=round(lowerS,5))))
 
 if(boot==FALSE){
  
-summary<-cbind("time"=x,"n.event"=mult4,"density"=round(f,5),"cumulative.df"=round(FF,5),"survival"=round(Sob,5), "hazard"=round(h,5))
-
-colnames(summary)<-c("time","n.event","density", "cumulative.df", "survival", "hazard")
-rownames(summary)<-rep("",times=length(x))
-print(summary,digits=5, justify="left")
-return(invisible(list(n.iterations=iter, events=events, time=x, n.event=mult4, density=round(as.vector(f),5), cumulative.df=round(FF,5), survival=
-round(as.vector(Sob),5), truncation.probs=round(as.vector(F0),5),  hazard=round(as.vector(h),5), NJ=as.vector(NJ))))
+return(invisible(list(n.iterations=iter, events=events, time=C[,1], n.event=mult4, density=round(as.vector(f),5), cumulative.df=round(FFF,5), survival=
+round(as.vector(Sob0),5), truncation.probs=round(as.vector(F0),5),  hazard=round(as.vector(h),5), NJ=as.vector(NJ))))
 
 
 }

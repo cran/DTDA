@@ -70,12 +70,17 @@ A list containing the following values:
  \item{lower.fU }{The estimated lower limits of the confidence intervals for \code{fU}. }
 \item{upper.fV }{The estimated upper limits of the confidence intervals for \code{fV}. }
  \item{lower.fV }{The estimated lower limits of the confidence intervals for \code{fV}. }
+  \item{sd.boot }{The bootstrap standard deviation.}
+\item{ Boot.Repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
 
 }
-\references{ Lynden-Bell, D. (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.
-Astronomical Society, 155, 95-118.
 
-Shen, P-S. (2008) Nonparametric analysis of doubly truncated data. \emph{Annals of the Institute of Statistical Mathematics} DOI 10.1007/s10463-008-0192-2.
+\references{ Lynden-Bell D (1971) A method of allowing for known observational selection in small samples applied to 3CR quasars. \emph{Monograph National Royal Astronomical Society} \bold{155}, 95-118.
+
+
+Shen P-S (2010) Nonparametric analysis of doubly truncated data. \emph{Annals of the Institute of Statistical Mathematics} \bold{62}, 835-853.
+
+Xiao J,  Hudgens MG (2020) On nonparametric maximum likelihood estimation with double truncation. \emph{Biometrika} \bold{106}, 989-996.
 
 }
 

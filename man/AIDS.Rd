@@ -1,14 +1,12 @@
 \name{AIDS}
 \alias{AIDS}
 \docType{data}
-\title{Time to AIDS
+\title{ AIDS Blood Transfusion Data
 }
 \description{
 The data
 include information on the infection and induction times for 258 adults who
-were infected with HIV virus and developed AIDS by June 30, 1996. The data consist on
-the time in years, measured from April 1, 1978, when adults were infected by the virus from
-a contaminated blood transfusion, and the waiting time to development of AIDS, measured
+were infected with HIV virus and developed AIDS by June 30, 1996. The data consist on the time in years, measured from April 1, 1978, when adults were infected by the virus from a contaminated blood transfusion, and the waiting time to development of AIDS, measured
 from the date of infection.
 }
 \usage{data(AIDS)}
