@@ -2,10 +2,10 @@
 \name{lynden}
 \alias{lynden}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{ Doubly truncated data analysis with the second Efron-Petrosian algorithm }
+\title{ NPMLE computation with the second Efron-Petrosian algorithm }
 \description{
-  This function computes the NPMLE of a lifetime distribution function observed under one-sided (right or left) and two-sided (double) truncation.
-It provides bootstrap pointwise confidence limits too.
+  This function computes the NPMLE for the cumulative distribution function of  \code{X} observed under one-sided (right or left) and two-sided (double) truncation.
+It provides simple bootstrap pointwise confidence limits too. This function allows for ties in the samples of \code{X}, \code{U} and \code{V}.
 
 }
 \usage{
@@ -15,9 +15,9 @@ lynden(X, U = NA, V = NA, error = NA, nmaxit = NA,
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{X}{ Numeric vector with the times of ultimate interest.}
-  \item{U}{Numeric vector with the left truncation times. If there are no truncation times from the left, put \code{U}=\code{NA}.}
-  \item{V}{ Numeric vector with the right truncation times. If there are no truncation times from the left, put \code{V}=\code{NA}.}
+  \item{X}{ Numeric vector with the values of the target variable.}
+  \item{U}{Numeric vector with the values of the left truncation variable. If there are no truncation values from the left, put \code{U}=\code{NA}.}
+  \item{V}{ Numeric vector with the values of the right truncation variable. If there are no truncation values from the right, put \code{V}=\code{NA}.}
    \item{error}{ Numeric value. Maximum pointwise error when estimating the density associated to X (f) in two consecutive steps. If this is missing, it is $1e{-06}$.}
   \item{nmaxit}{ Numeric value. Maximum number of iterations. If this is missing, it is set to \code{nmaxit} =100 . }
   \item{boot}{ Logical. If TRUE (default), the simple bootstrap method is applied to lifetime distribution estimation.
@@ -30,9 +30,9 @@ lynden(X, U = NA, V = NA, error = NA, nmaxit = NA,
 
 }
 \details{
-  The NPMLE of the lifetime is computed by the second algorithm proposed in \cite{Efron and Petrosian (1999)}. This is an alternative algorithm which converges to the
+  The NPMLE for the cumulative distribution function is computed by the second algorithm proposed in \cite{Efron and Petrosian (1999)}. This is an iterative algorithm which converges to the
 NMPLE after a number of iterations.
-If the second (respectively third) argument is missing, computation of the Lynden-Bell estimator for right-truncated (respectively left-truncated)
+If the second (respectively third) argument is missing, the Lynden-Bell estimator for right-truncated (respectively left-truncated)
  data is obtained.
 Note that individuals with NAs in the three first arguments will be automatically excluded.
 
@@ -47,7 +47,7 @@ A list containing the following values:
   \item{NJ }{The number of individuals in risk considering the left truncation times. }
   \item{density }{The estimated density values. }
   \item{cumulative.df }{The estimated cumulative distribution values. }
-  \item{truncation.probs }{The probabilities of truncation values, in each region. }
+  \item{truncation.probs }{The probability of \code{X} falling into each truncation interval. }
   \item{hazard }{The estimated hazard values. }
   \item{S0 }{\code{error} reached in the algorithm. }
   \item{Survival }{The estimated survival values. }
@@ -58,8 +58,8 @@ A list containing the following values:
   \item{lower.df }{The estimated lower limits of the confidence intervals for F. }
   \item{upper.Sob }{The estimated upper limits of the confidence intervals for S. }
   \item{lower.Sob }{The estimated lower limits of the confidence intervals for S. }
-   \item{sd.boot }{The bootstrap standard deviation.}
-\item{ Boot.Repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
+   \item{sd.boot }{The bootstrap standard deviation of F estimator.}
+\item{boot.repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
 }
 \references{ Efron B and Petrosian V (1999) Nonparametric methods for doubly truncated data. \emph{Journal of the American Statistical Association} \bold{94}, 824-834.
 
@@ -69,7 +69,11 @@ Lynden-Bell D (1971) A method of allowing for known observational selection in s
 
 \seealso{\code{\link{efron.petrosian}} }
 \examples{
+
 #  Generating data which are doubly truncated
+
+set.seed(4321)
+
 n<-25
 X<-runif(n,0,1)
 U<-runif(n,0,0.25)
@@ -85,6 +89,8 @@ for (i in 1:n){
 res<-lynden(X=X, U=U, V=V, boot=FALSE, display.F=TRUE, display.S=TRUE)
 
 # Generating data which are right truncated
+
+set.seed(4321)
 
 n<-25
 X<-runif(n,0,1)

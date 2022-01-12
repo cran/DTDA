@@ -21,8 +21,8 @@ for (i in 1:n){
 
 
 T<-table(U<= X&X<=V)
-if(length(T)!=1){
-stop("Condition of double truncation is violated","\n")
+if(sum(T[names(T)=="TRUE"])!=length(X) |sum(T[names(T)=="TRUE"]==0)){
+  stop("Condition of double truncation is violated","\n")
 }
 
 }
@@ -40,8 +40,8 @@ V[i] <- U[i] + tau
 }
 }
 T<-table(U<= X&X<=V)
-if(length(T)!=1){
-stop("Condition of double truncation is violated","\n")
+if(sum(T[names(T)=="TRUE"])!=length(X) |sum(T[names(T)=="TRUE"]==0)){
+  stop("Condition of double truncation is violated","\n")
 }
 
 

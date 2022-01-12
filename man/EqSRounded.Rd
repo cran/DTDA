@@ -5,7 +5,7 @@
 Equipment-S Rounded Failure Time Data
 }
 \description{
-Digitized data from Figure X in \cite{Ye and Tang 2016}. The dataset contains (rounded) observations of 174 failure times of certain devices, observed under interval sampling. Right-runcation is years between installation and 2011 and left truncation corresponds to right-truncation time minus 15 years. The failure time is doubly truncated due to the interval sampling.
+Digitized data from Figure 2 in \cite{Ye and Tang 2016}. The dataset contains (rounded) observations of 174 failure times of certain devices, observed under interval sampling. Right-runcation is years between installation and 2011 and left truncation corresponds to right-truncation time minus 15 years. The failure time is doubly truncated due to the interval sampling.
 }
 \usage{data("EqSRounded")}
 \format{

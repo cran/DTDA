@@ -2,10 +2,11 @@
 \name{efron.petrosian}
 \alias{efron.petrosian}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{ Doubly truncated data analysis with the first Efron-Petrosian algorithm }
+\title{ NPMLE computation with the first Efron-Petrosian algorithm }
 \description{
-  This function computes the NPMLE of a lifetime distribution function observed under one-sided (right or left) and two-sided (double) truncation.
-It provides bootstrap pointwise confidence limits too.
+  This function computes the NPMLE for the cumulative distribution function of  \code{X} observed under one-sided (right or left) and two-sided (double) truncation.
+It provides simple bootstrap pointwise confidence limits too.
+
 }
 \usage{
 efron.petrosian(X, U = NA, V = NA, wt = NA, error = NA,
@@ -14,9 +15,9 @@ efron.petrosian(X, U = NA, V = NA, wt = NA, error = NA,
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{X}{ Numeric vector with the times of ultimate interest.}
-  \item{U}{ Numeric vector with the left truncation times. If there are no truncation times from the left, put \code{U}=\code{NA}.}
-  \item{V}{ Numeric vector with the right truncation times. If there are no truncation times from the left, put \code{V}=\code{NA}.}
+   \item{X}{ Numeric vector with the values of the target variable.}
+  \item{U}{Numeric vector with the values of the left truncation variable. If there are no truncation values from the left, put \code{U}=\code{NA}.}
+  \item{V}{ Numeric vector with the values of the right truncation variable. If there are no truncation values from the right, put \code{V}=\code{NA}.}
   \item{wt}{ Numeric vector of non-negative initial solution, with the same length as \code{X}. Default value is set to 1/n, being n the length of \code{X}. }
   \item{error}{ Numeric value. Maximum pointwise error when estimating the density associated to X (f) in two consecutive steps. If this is missing, it is $1e{-06}$.}
   \item{nmaxit}{ Numeric value. Maximum number of iterations. If this is missing, it is set to \code{nmaxit} =100 . }
@@ -29,7 +30,7 @@ efron.petrosian(X, U = NA, V = NA, wt = NA, error = NA,
 
 }
 \details{
-  The NPMLE of the lifetime is computed by the first algorithm proposed in \cite{Efron and Petrosian (1999)}. This is an alternative algorithm which converges to the
+The NPMLE for the cumulative distribution function is computed by the first algorithm proposed in \cite{Efron and Petrosian (1999)}. This is an iterative algorithm which converges to the
 NMPLE after a number of iterations.
 If the second (respectively third) argument is missing, computation of the Lynden-Bell estimator for right-truncated (respectively left-truncated)
  data is obtained.
@@ -44,7 +45,7 @@ A list containing the following values:
   \item{events}{The total number of events. }
   \item{density }{The estimated density values. }
   \item{cumulative.df }{The estimated cumulative distribution values. }
-  \item{truncation.probs }{The probabilities of truncation values, in each region. }
+  \item{truncation.probs }{The probability of \code{X} falling into each truncation interval.}
   \item{S0 }{ \code{error} reached in the algorithm. }
   \item{Survival }{The estimated survival values. }
   \item{n.iterations }{The number of iterations used by this algorithm. }
@@ -54,8 +55,8 @@ A list containing the following values:
   \item{lower.df }{The estimated lower limits of the confidence intervals for F. }
   \item{upper.Sob }{The estimated upper limits of the confidence intervals for S. }
   \item{lower.Sob }{The estimated lower limits of the confidence intervals for S. }
-\item{sd.boot }{The bootstrap standard deviation. }
-\item{ Boot.Repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
+\item{sd.boot }{The bootstrap standard deviation of F estimator. }
+\item{boot.repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
 
 }
 \references{ Efron B and Petrosian V (1999) Nonparametric methods for doubly truncated data. \emph{Journal of the American Statistical Association} \bold{94}, 824-834.
@@ -72,6 +73,8 @@ Xiao J and  Hudgens MG (2020) On nonparametric maximum likelihood estimation wit
 \seealso{\code{\link{lynden}} }
 \examples{
 ##  Generating data which are doubly truncated
+
+set.seed(4321)
 
 n<-25
 X<-runif(n,0,1)

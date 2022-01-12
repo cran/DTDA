@@ -10,7 +10,7 @@ The sample consists of DNA from 100 Caucasian Parkinson's Disease (PD) patients 
 }
 \usage{data("PDlate")}
 \format{
-  A data frame with 99 observations on the following 5 variables.
+  A data frame with 100 observations on the following 5 variables.
   \describe{
     \item{\code{X}}{a numeric vector, age at onset of PD (in years).}
     \item{\code{U}}{a numeric vector, age at blood sampling minus 8 years. }

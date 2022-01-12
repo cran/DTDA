@@ -6,7 +6,7 @@
 Estimation of the kernel hazard function under random double truncation
 }
 \description{
-This function provides the nonparametric kernel hazard estimation for a variable which is observed under random double truncation, which is defined as a convolution of a kernel function with the NPMLE of the cumulative df. Least square cross validation bandwidth selection procedure is implemented too.
+This function provides the nonparametric kernel hazard estimation for a variable which is observed under random double truncation, which is defined as a convolution of a kernel function with the NPMLE of the cumulative hazard. Least square cross validation bandwidth selection procedure is implemented too.
 }
 \usage{
 hazardDT(X, U, V, bw = "LSCV", from, to, n, wg = NA)
@@ -14,45 +14,45 @@ hazardDT(X, U, V, bw = "LSCV", from, to, n, wg = NA)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{X}{
-numeric vector with the values of the target variable.
+Numeric vector with the values of the target variable.
 }
-  \item{U}{
-numeric vector with the values of the left truncation variable.
+\item{U}{
+Numeric vector with the values of the left truncation variable.
 
 }
-  \item{V}{
-numeric vector with the values of the rigth truncation variable.
+\item{V}{
+Numeric vector with the values of the rigth truncation variable.
 
 }
   \item{bw}{
 The smoothing bandwidth to be used, but can also be a character string giving a rule to choose the bandwidth. This must be  \code{"LSCV"}.
 }
 
-  \item{from}{
-the left  point of the grid at which the density is to be estimated.
+\item{from}{
+the left  point of the grid at which the density is to be estimated. The default is min(X)+1e-04.
 }
 
- \item{to}{
-the rigth  point of the grid at which the density is to be estimated.
+\item{to}{
+the rigth  point of the grid at which the density is to be estimated. The default is max(X)-1e-04.
 }
-  \item{n}{
+\item{n}{
 number of evaluation points on a equally spaced grid.
 }
-  \item{wg}{
-numeric vector of non-negative initial solution, with the same length as \code{X}. Default value is the solution obtained with Efron and Petrosian algotithm.
+\item{wg}{
+Numeric vector of random weights to correct for double truncation. Default weights correspond to the Efron-Petrosian NPMLE.
 }
 
 }
 
 \details{
-The nonparametric kernel density estimation for a variable which is observed under random double truncation is computed  as proposed in \cite{Moreira et al.(2021)}. As usual in kernel smoothing, the estimator is  obtained as a convolution between a kernel function and an appropriate  estimator of the cumulative df. Gaussian kernel is used.
+The nonparametric kernel density estimation for a variable which is observed under random double truncation is computed  as proposed in \cite{Moreira et al.(2021)}. As usual in kernel smoothing, the estimator is  obtained as a convolution between a kernel function and an appropriate  estimator of the cumulative hazard. Gaussian kernel is used.
 The automatic bandwidth selection procedures for the kernel hazard estimator is the least square cross validation, presented in \cite{Moreira et al. (2021)}.
 }
 
 \value{
 A list containing the following values:
-\item{x }{the n coordinates of the points where the density is estimated. }
- \item{y}{the estimated density values.}
+\item{x }{the n coordinates of the points where the hazard is estimated. }
+ \item{y}{the estimated hazard values.}
  \item{bw}{the bandwidth used.}
 }
 %\details{
@@ -95,6 +95,6 @@ vxhazard2<-hazardDT(X,U,V,bw="LSCV",0,1,500)
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~Kernel hazard estimation }
- \keyword{ ~Bandwidth selection }
-  \keyword{ ~Double truncation }
+\keyword{Kernel hazard estimation }
+ \keyword{Bandwidth selection }
+  \keyword{Double truncation }

@@ -6,7 +6,7 @@
  Estimation of a kernel density function under random double truncation
 }
 \description{
-This function provides the nonparametric kernel density estimation of a doubly truncated random variable. A bandwidth value is required.
+This function provides the nonparametric kernel density estimation of a doubly truncated random variable.
 
 }
 \usage{
@@ -30,17 +30,17 @@ The smoothing bandwidth to be used, but can also be a character string giving a 
 }
 
   \item{from}{
-the left  point of the grid at which the density is to be estimated.
+the left  point of the grid at which the density is to be estimated. The default is min(X)+1e-04.
 }
 
  \item{to}{
-the rigth  point of the grid at which the density is to be estimated.
+the rigth  point of the grid at which the density is to be estimated. The default is max(X)-1e-04.
 }
   \item{n}{
 number of evaluation points on a equally spaced grid.
 }
   \item{wg}{
-Numeric vector of non-negative initial solution, with the same length as \code{X}. Default value is the solution obtained with Efron and Petrosian algotithm.
+Numeric vector of random weights to correct for double truncation. Default weights correspond to the Efron-Petrosian NPMLE.
 }
 
 
@@ -80,7 +80,7 @@ B} \bold{53}, 683-690.
 Silverman BW (1986) Density Estimation. London: Chapman and Hall.
 
 }
-\author{ Carla Moreira, de de Uña-Álvarez and Rosa Crujeiras }
+\author{ Carla Moreira, de Uña-Álvarez and Rosa Crujeiras }
 
 %\note{
 %%%  ~~further notes~~
@@ -91,6 +91,7 @@ Silverman BW (1986) Density Estimation. London: Chapman and Hall.
 \seealso{\code{\link{hazardDT}} }
 \examples{
 
+set.seed(4321)
 
 n<-50
 X <- runif(n, 0, 1)
@@ -108,6 +109,7 @@ for (i in 1:n){
 
 
 vxDens1<-densityDT(X,U,V,bw="DPI1",0,1,500)
+plot(vxDens1, type = "l")
 vxDens2<-densityDT(X,U,V,bw="DPI2",0,1,500)
 vxDens3<-densityDT(X,U,V, bw=0.5,0,1,500)
 vxDens4<-densityDT(X,U,V,bw="LSCV",0,1,500)
@@ -115,14 +117,14 @@ vxDens4<-densityDT(X,U,V,bw="LSCV",0,1,500)
 
 data(Quasars)
 densityDT(Quasars[,1],Quasars[,2],Quasars[,3],bw="DPI1",-2.5,2.2,500)
-densityDT(Quasars[,1],Quasars[,2],Quasars[,3], bw=0.5,-2.5,2.2,500)
+densityDT(Quasars[,1],Quasars[,2],Quasars[,3], bw=0.5,500)
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
- \keyword{ ~Kernel density estimation }
- \keyword{ ~Bandwidth selection }
-  \keyword{ ~Double truncation }
+ \keyword{Kernel density estimation }
+ \keyword{Bandwidth selection }
+  \keyword{Double truncation }
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
 % \concept{ ~cpt1 }

@@ -7,13 +7,13 @@ Childhood Cancer Data
 }
 \description{
 This dataset corresponds to all children diagnosed from cancer between January
-1, 1999  and December 31, 2003  in the region of North Portugal. The database includes information of 406 children with complete records on the age at diagnosis. Because of the interval sampling, the age at diagnosis is doubly truncated by the time  from birth to the end of the study, and time from birth to the beggining of the study (time in days). The age at diagnosis is doubly truncated due to the interval sampling.
+1, 1999  and December 31, 2003  in the region of North Portugal. The database includes information of 406 children with complete records on the age at diagnosis. Because of the interval sampling, the age at diagnosis is doubly truncated by the time  from birth to the end of the study, and time from birth to the beggining of the study.
 }
 \usage{data("ChildCancer")}
 \format{
   A data frame with 406 observations on the following 8 variables.
   \describe{
-    \item{\code{X}}{a numeric vector, age at diagnosis(time in days).}
+    \item{\code{X}}{a numeric vector, age at diagnosis (time in days).}
     \item{\code{U}}{a numeric vector, time from birth to the beggining of the study (time in days).}
 \item{\code{V}}{a numeric vector, time from birth to the end of the study (time in days).}
 \item{\code{ICCGroup}}{a numeric vector,  cancer types
@@ -32,6 +32,9 @@ This dataset corresponds to all children diagnosed from cancer between January
 The childhood cancer data were gathered from the IPO (Registo Oncológico do Norte) service, kindly provided by Doctor Maria José Bento.
 }
 \references{
+
+Mandel M, de Uña-Álvarez J,  Simon DK and Betensky R (2018). Inverse Probability Weighted Cox Regression for Doubly Truncated Data. \emph{Biometrics} \bold{74}, 481-487.
+
 Moreira C and  de Uña-Álvarez J (2010) Bootstrapping the NPMLE for doubly truncated data. \emph{Journal of Nonparametric Statistics} \bold{22}, 567-583.
 }
 \examples{

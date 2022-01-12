@@ -2,7 +2,7 @@
 
 densityDT <-function(X,U,V, bw="DPI2", from,to,n, wg=NA){
 
-  shen0 <-function(X, U=NA, V=NA, wt=NA, error=NA, nmaxit=NA){
+  CDF <-function(X, U=NA, V=NA, wt=NA, error=NA, nmaxit=NA){
 
     if(any(is.na(U))==TRUE | any(is.na(V))==TRUE|any(is.na(X))==TRUE){
       navec<-c(which(is.na(X)),which(is.na(U)),which(is.na(V)))
@@ -20,9 +20,11 @@ densityDT <-function(X,U,V, bw="DPI2", from,to,n, wg=NA){
     C[,2:ncol(D)]<-D[ord,2:ncol(D)]
 
     T<-table(C[,2]<= C[,1]&C[,1]<=C[,3])
-    if(length(T)!=1){
+     if(sum(T[names(T)=="TRUE"])!=length(X) |sum(T[names(T)=="TRUE"]==0)){
       stop("Condition of double truncation is violated","\n")
     }
+
+
 
     if(is.na(error)==TRUE) error<-1e-6
 
@@ -117,10 +119,30 @@ densityDT <-function(X,U,V, bw="DPI2", from,to,n, wg=NA){
     return((f-fh)^2)
   }
 
-  ifelse(is.na(wg)==TRUE, wg<-WgEP<-shen0(X,U,V)[[5]], wg)
+
+if(any(is.na(U))==TRUE | any(is.na(V))==TRUE|any(is.na(X))==TRUE){
+      navec<-c(which(is.na(X)),which(is.na(U)),which(is.na(V)))
+      X<-X[-navec]
+      U<-U[-navec]
+      V<-V[-navec]
+	wg<-wg[-navec]
+
+    }
 
 
-  vxM<-shen0(X,U,V)
+
+  vxM<-CDF(X,U,V)
+  ifelse(is.na(wg)==TRUE, wg<-WgEP<-vxM[[5]], wg)
+  ifelse(missing(from)==TRUE, from<-min(X)+0.0001, from)
+  ifelse(missing(to)==TRUE, to<-max(X)-0.0001, to)
+  ifelse(missing(n)==TRUE, n<-500, n)
+
+
+    ord<-order(X)
+    X<-sort(X)
+    U<-U[ord]
+    V<-V[ord]
+
 
   gfuncEP<-biasfM<-vxM[[9]]
   f2hatM<-vxM[[10]]

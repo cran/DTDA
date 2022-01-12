@@ -24,9 +24,11 @@ shen <-
     trunc <- "both"
 
     # analize if we have a NA and remove then
-    if (all(is.na(U)) == TRUE) {
+    if (all(is.na(U)) == TRUE & !all(is.na(V)) == TRUE) {
       trunc <- "right"
       cat("case U=NA","\n")
+	  cat("warning: data on one truncation limit are missing; the result is based on an iterative algorithm, but an explicit-form NPMLE (Lynden-Bell estimator) exists","\n")
+
 
       if (any(is.na(V)) == TRUE | any(is.na(X)) == TRUE) {
         navec <- c(which(is.na(X)), which(is.na(V)))
@@ -37,10 +39,10 @@ shen <-
 
 
     # check for NA in the resulting vector
-    if (all(is.na(V)) == TRUE) {
+    if (all(is.na(V)) == TRUE & !all(is.na(U)) == TRUE) {
       trunc <- "left"
       cat("case V=NA","\n")
-
+cat("warning: data on one truncation limit are missing; the result is based on an iterative algorithm, but an explicit-form NPMLE (Lynden-Bell estimator) exists","\n")
 
       if (any(is.na(U)) == TRUE | any(is.na(X)) == TRUE) {
         navec <- c(which(is.na(X)), which(is.na(U)))
@@ -50,7 +52,12 @@ shen <-
     }
 
 
-    # if trunccation is set both sides prepare the arrays
+   if (all(is.na(V)) == TRUE & all(is.na(U)) == TRUE) {
+cat("case U=NA and V=NA","\n")
+stop("warning: data on at least one truncation limit (left or right) is required","\n")
+}	
+	
+	# if trunccation is set both sides prepare the arrays
     if (trunc == "both") {
       if (any(is.na(U)) == TRUE |
           any(is.na(V)) == TRUE | any(is.na(X)) == TRUE) {
@@ -92,21 +99,27 @@ shen <-
       D[ord, 2:ncol(D)] # use the ordered indeces for ordering
 
 	T<-table(C[,2]<= C[,1]&C[,1]<=C[,3])
-	if(length(T)!=1){
-	stop("Condition of double truncation is violated","\n")
-	}
+    if(sum(T[names(T)=="TRUE"])!=length(X) |sum(T[names(T)=="TRUE"]==0)){
+      stop("Condition of double truncation is violated","\n")
+    }
 
     if (is.na(error) == TRUE)
       error <- 1e-6
 
+	UN<-unique(C)
+	aun <- outer(UN[, 1], UN[, 2], ">=")
+	avn <- outer(UN[, 1], UN[, 3], "<=")
     au <- outer(C[, 1], C[, 2], ">=")
     av <- outer(C[, 1], C[, 3], "<=")
     auu <- outer(C[, 2], C[, 2], "<=") * 1L
 
     J <- au * av
-    SC <- colSums(J)
-    ad <- length(which(SC == 1))
-        if (ad != 0) {
+    JUN <- aun * avn
+	SC <- colSums(JUN)
+	SC2<-rowSums(JUN)
+	ad <- length(which(SC == 1))
+	add <- length(which(SC2 == 1))
+					  if (ad != 0 | add!=0){
       #if (my_debug)
         cat("Warning. Non-uniqueness or no existence of the NPMLE", "\n")
     }
@@ -163,9 +176,10 @@ shen <-
     FFF<-cumsum(f) # do cumsum without ties
     Sob <- 1 - FF + Fval
     Sob[Sob < 1e-12] <- 0
-    Sob0<-1-FFF
+	Sob0<-1-FFF
 	Sob[Sob<1e-12]<-0
 	Sob0[Sob0<1e-12]<-0
+	
 
 
 
@@ -515,19 +529,27 @@ shen <-
               M2b[, 2:ncol(M1b)] <- M1b[ord, 2:ncol(M1b)]
 
               # preallocate
+			  Aun<-unique(M2b)
               Jb <- matrix(data = 0,ncol = nrow(M2b), nrow = nrow(M2b))
 
               aub <- outer(M2b[, 1], M2b[, 2], ">=")
+			  aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(M2b[, 1], M2b[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(M2b[, 2], M2b[, 2], "<=") * 1L
               Jb <- aub * avb
+			  Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
+              adb <- length(which(SCb == 1))
+			  adbb <- length(which(SCb2 == 1))
               SCb <- apply(Jb, 2, "sum")
               adb <- length(which(SCb == 1))
 
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+             if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -785,19 +807,27 @@ shen <-
               M2b[, 2:ncol(M1b)] <- M1b[ord, 2:ncol(M1b)]
 
               # preallocate
+			  Aun<-unique(M2b)
               Jb <- matrix(data = 0,ncol = nrow(M2b), nrow = nrow(M2b))
 
               aub <- outer(M2b[, 1], M2b[, 2], ">=")
+			  aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(M2b[, 1], M2b[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(M2b[, 2], M2b[, 2], "<=") * 1L
               Jb <- aub * avb
+			  Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
+              adb <- length(which(SCb == 1))
+			  adbb <- length(which(SCb2 == 1))
               SCb <- apply(Jb, 2, "sum")
               adb <- length(which(SCb == 1))
 
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+             if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -1048,19 +1078,25 @@ shen <-
               M2b[, 2:ncol(M1b)] <- M1b[ord, 2:ncol(M1b)]
 
               # preallocate
+			  Aun<-unique(M2b)
               Jb <- matrix(data = 0,ncol = nrow(M2b), nrow = nrow(M2b))
 
               aub <- outer(M2b[, 1], M2b[, 2], ">=")
+			  aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(M2b[, 1], M2b[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(M2b[, 2], M2b[, 2], "<=") * 1L
               Jb <- aub * avb
-              SCb <- apply(Jb, 2, "sum")
+              Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
               adb <- length(which(SCb == 1))
+			  adbb <- length(which(SCb2 == 1))
 
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+            if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -1343,18 +1379,24 @@ shen <-
           DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
 
+		Aun<-unique(DBB)
           Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
           aub <- outer(DBB[, 1], DBB[, 2], ">=")
+		  aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(DBB[, 1], DBB[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(DBB[, 2], DBB[, 2], "<=") * 1L
               Jb <- aub * avb
-              SCb <- apply(Jb, 2, "sum")
+              Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
               adb <- length(which(SCb == 1))
+			  adbb <- length(which(SCb2 == 1))
 
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+            if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -1616,18 +1658,23 @@ shen <-
           DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
 
+			Aun<-unique(DBB)
           Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
           aub <- outer(DBB[, 1], DBB[, 2], ">=")
+		  aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(DBB[, 1], DBB[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(DBB[, 2], DBB[, 2], "<=") * 1L
               Jb <- aub * avb
-              SCb <- apply(Jb, 2, "sum")
+              Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
               adb <- length(which(SCb == 1))
-
+			  adbb <- length(which(SCb2 == 1))
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+            if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -1875,18 +1922,25 @@ shen <-
           DBB[,2:ncol(DB)]<-DB[ordB,2:ncol(DBB)]
 
           error<-1e-6
+		  
+		  Aun<-unique(DBB)
           Jb<-matrix(data=0,ncol=nrow(DBB),nrow=nrow(DBB))
           aub <- outer(DBB[, 1], DBB[, 2], ">=")
+		   aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(DBB[, 1], DBB[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(DBB[, 2], DBB[, 2], "<=") * 1L
               Jb <- aub * avb
-              SCb <- apply(Jb, 2, "sum")
+              Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
               adb <- length(which(SCb == 1))
+			  adbb <- length(which(SCb2 == 1))
 
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+            if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -1954,9 +2008,6 @@ shen <-
             Sobb <- 1 - FF0b + ff0b
             Sobb[Sobb < 1e-12] <- 0
 
-
-			Sobb <- 1 - FF0b + ff0b
-            Sobb[Sobb < 1e-12] <- 0
 
             # SAVE start saving stufs (before indexed to b index)
             M_IF0 <- as.vector(FF0b)
@@ -2066,22 +2117,22 @@ shen <-
 
     if(trunc=="both"){
 
-	  x<-C[,1]
+	  x<-unique(C[,1])
 	  UU<-sort(C[,2])
 	  VV<-sort(C[,3])
       if((display.FS==TRUE)&(display.UV==TRUE)){
         dev.new()
         par(mfrow=c(2,2))
 
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
@@ -2105,7 +2156,7 @@ shen <-
         }
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
@@ -2113,8 +2164,8 @@ shen <-
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
@@ -2279,15 +2330,15 @@ shen <-
       if((display.FS==TRUE)&(display.UV==FALSE)){
         dev.new()
         par(mfrow=c(1,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
@@ -2311,7 +2362,7 @@ shen <-
         }
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
@@ -2319,8 +2370,8 @@ shen <-
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
@@ -2357,20 +2408,20 @@ shen <-
 
     if(trunc=="left"){
 
-	  X<-C[,1]
+	  x<-unique(C[,1])
 	  UU<-sort(C[,2])
       if((display.FS==TRUE)&(display.UV==TRUE)){
         dev.new()
         par(mfrow=c(2,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
@@ -2394,16 +2445,16 @@ shen <-
         }
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -2504,15 +2555,15 @@ shen <-
       if((display.FS==TRUE)&(display.UV==FALSE)){
         dev.new()
         par(mfrow=c(1,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
@@ -2536,16 +2587,16 @@ shen <-
         }
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(x),1,C[,1][1],1,lty=3)
@@ -2580,21 +2631,21 @@ shen <-
 
 
     if(trunc=="right"){
-      x<-C[,1]
+      x<-unique(C[,1])
 	  VV<-sort(C[,3])
       if((display.FS==TRUE)&(display.UV==TRUE)){
         dev.new()
         par(mfrow=c(2,2))
 
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),0,C[,1][1],0,lty=3)
@@ -2616,16 +2667,16 @@ shen <-
           segments(C[,1][i+1],lowerF[i],C[,1][i+1],lowerF[i+1],lty=3)
         }
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -2724,15 +2775,15 @@ shen <-
       if((display.FS==TRUE)&(display.UV==FALSE)){
         dev.new()
         par(mfrow=c(1,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),0,C[,1][1],0,lty=3)
@@ -2754,16 +2805,16 @@ shen <-
           segments(C[,1][i+1],lowerF[i],C[,1][i+1],lowerF[i+1],lty=3)
         }
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
         segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -2795,18 +2846,9 @@ shen <-
   }
 
 
-
-
-
-
-
-
-
-
-
   if (boot==FALSE|B<40){
     if(trunc=="both"){
-       x<-C[,1]
+       x<-unique(C[,1])
 	   UU<-sort(C[,2])
 	   VV<-sort(C[,3])
       if(plot.joint==TRUE){
@@ -2874,29 +2916,33 @@ shen <-
       if((display.FS==TRUE)&(display.UV==TRUE)){
         dev.new()
         par(mfrow=c(2,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
+		segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob0[1],
+         y1 = 1) 
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
 
@@ -2956,29 +3002,33 @@ shen <-
       if((display.FS==TRUE)&(display.UV==FALSE)){
         dev.new()
         par(mfrow=c(1,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
+		segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob[1],
+         y1 = 1) 
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
       }
 
@@ -2992,33 +3042,37 @@ shen <-
 
     if(trunc=="left"){
 	UU<-sort(C[,2])
-      x<-C[,1]
+      x<-unique(C[,1])
       if((display.FS==TRUE)&(display.UV==TRUE)){
         dev.new()
         par(mfrow=c(2,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
+		segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob[1],
+         y1 = 1) 
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
 
@@ -3053,29 +3107,33 @@ shen <-
       if((display.FS==TRUE)&(display.UV==FALSE)){
         dev.new()
         par(mfrow=c(1,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
+		segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob[1],
+         y1 = 1) 
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
       }
@@ -3089,34 +3147,38 @@ shen <-
 
 
     if(trunc=="right"){
-      x<-C[,1]
+      x<-unique(C[,1])
 	  VV<-sort(C[,3])
       if((display.FS==TRUE)&(display.UV==TRUE)){
 
         dev.new()
         par(mfrow=c(2,2))
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
         segments(max(x),0,max(x),min(Sob0))
+		segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob[1],
+         y1 = 1) 
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
 
@@ -3150,29 +3212,33 @@ shen <-
       if((display.FS==TRUE)&(display.UV==FALSE)){
         dev.new()
         par(mfrow=c(1,2))
-		x<-C[,1]
-        plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Shen estimator", xlab="Time of interest",ylab="")
+		x<-unique(C[,1])
+        plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
         segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-        segments(x[1],0,x[1],FFF[1])
+        segments(x[1],0,x[1],FF[1])
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],FFF[i],x[i+1],FFF[i])
-          segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+          segments(x[i],FF[i],x[i+1],FF[i])
+          segments(x[i+1],FF[i],x[i+1],FF[i+1])
         }
 
 
-        plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+        plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
         segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
         segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
-        segments(max(x),0,max(x),min(Sob0))
+        segments(max(x),0,max(x),min(Sob))
+		segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob[1],
+         y1 = 1) 
 
 
         for(i in 1:(length(x)-1)){
-          segments(x[i],Sob0[i],x[i+1],Sob0[i])
-          segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+          segments(x[i],Sob[i],x[i+1],Sob[i])
+          segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
         }
 
       }
@@ -3202,20 +3268,20 @@ shen <-
     if(trunc=="both"){
       return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=C[,1], n.event=mult, density=round(as.vector(f),5), cumulative.df=round(FFF,5), survival=
                               round(as.vector(Sob0),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
-                            lower.Sob=round(lowerS,5), density.joint=round(as.vector(k),5),marginal.U=round(fU,5), marginal.V=round(fV,5), upper.fU=round(upperU,5), lower.fU=round(lowerU,5),upper.fV=round(upperV,5), lower.fV=round(lowerV,5),cumulative.joint=round(KK,5), sd.boot=round(stderror,5),Boot.Repeat=as.vector(BootRepeat) )))
+                            lower.Sob=round(lowerS,5), density.joint=round(as.vector(k),5),marginal.U=round(fU,5), marginal.V=round(fV,5), upper.fU=round(upperU,5), lower.fU=round(lowerU,5),upper.fV=round(upperV,5), lower.fV=round(lowerV,5),cumulative.joint=round(KK,5), sd.boot=round(stderror,5),boot.repeat=as.vector(BootRepeat) )))
 
     }
 
     if(trunc=="left"){
       return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=C[,1], n.event=mult, density=round(as.vector(f),5), cumulative.df=round(FFF,5), survival=
                               round(as.vector(Sob0),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
-                            lower.Sob=round(lowerS,5), density.joint=round(as.vector(ku),5),marginal.U=round(fU,5),upper.fU=round(upperU,5), lower.fU=round(lowerU,5),sd.boot=round(stderror,5),Boot.Repeat=as.vector(BootRepeat))))
+                            lower.Sob=round(lowerS,5), density.joint=round(as.vector(ku),5),marginal.U=round(fU,5),upper.fU=round(upperU,5), lower.fU=round(lowerU,5),sd.boot=round(stderror,5),boot.repeat=as.vector(BootRepeat))))
     }
     if(trunc=="right"){
 
       return(invisible(list(n.iterations=iter,events=events, B=B, alpha=alpha,Boot=boot.type,time=C[,1], n.event=mult, density=round(as.vector(f),5), cumulative.df=round(FFF,5), survival=
                               round(as.vector(Sob0),5), truncation.probs=round(as.vector(F0),5), biasf=round(biasf,5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
-                            lower.Sob=round(lowerS,5), density.joint=round(as.vector(kv),5), marginal.V=round(fV,5), upper.fV=round(upperV,5), lower.fV=round(lowerV,5),sd.boot=round(stderror,5),Boot.Repeat=as.vector(BootRepeat) )))
+                            lower.Sob=round(lowerS,5), density.joint=round(as.vector(kv),5), marginal.V=round(fV,5), upper.fV=round(upperV,5), lower.fV=round(lowerV,5),sd.boot=round(stderror,5),boot.repeat=as.vector(BootRepeat) )))
 
     }
   }

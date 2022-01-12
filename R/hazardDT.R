@@ -3,13 +3,14 @@
 
 hazardDT<-function(X,U,V, bw="LSCV", from,to,n, wg=NA){
 
- shen0 <-function(X, U=NA, V=NA, wt=NA, error=NA, nmaxit=NA){
+  CDF <-function(X, U=NA, V=NA, wt=NA, error=NA, nmaxit=NA){
 
     if(any(is.na(U))==TRUE | any(is.na(V))==TRUE|any(is.na(X))==TRUE){
       navec<-c(which(is.na(X)),which(is.na(U)),which(is.na(V)))
       X<-X[-navec]
       U<-U[-navec]
       V<-V[-navec]
+
 
     }
     if(is.na(wt)==TRUE) wt<-rep(1/length(X),times=length(X))
@@ -21,7 +22,7 @@ hazardDT<-function(X,U,V, bw="LSCV", from,to,n, wg=NA){
     C[,2:ncol(D)]<-D[ord,2:ncol(D)]
 
     T<-table(C[,2]<= C[,1]&C[,1]<=C[,3])
-    if(length(T)!=1){
+    if(sum(T[names(T)=="TRUE"])!=length(X) |sum(T[names(T)=="TRUE"]==0)){
       stop("Condition of double truncation is violated","\n")
     }
 
@@ -121,54 +122,63 @@ hazardDT<-function(X,U,V, bw="LSCV", from,to,n, wg=NA){
 
 
 
-CVhazardEP=function(h,data, wg,bias,vxMMEP,alpnEP,biasfEP){
-	t1<-sapply(1:length(h), function(i) {integrate(function(xx) (kdens(data, h[i],xx,wg)/sum(1/vxM[[9]]))^2,lower=min(xx), upper= max(xx), subdivisions=2000)$value})
-	#t1<-integrate(function(vec) kdens(data, h,vec,wg)^2,lower=min(vec), upper= max(vec), abs.tol=1e-4)$value
-	r<-sapply(1:length(data),function(i){kdens(data[-i], h,data[i],wg[-i])/sum(1/vxMMEP[,i][[9]])})
-	d1cv<-matrix(data=0, ncol=1, nrow=length(data))
-	d2cv<-matrix(data=0, ncol=1, nrow=length(data))
+  CVhazardEP=function(h,data, wg,bias,vxMMEP,alpnEP,biasfEP){
+    t1<-sapply(1:length(h), function(i) {integrate(function(xx) (kdens(data, h[i],xx,wg)/sum(1/vxM[[9]]))^2,lower=min(xx), upper= max(xx), subdivisions=2000)$value})
+    #t1<-integrate(function(vec) kdens(data, h,vec,wg)^2,lower=min(vec), upper= max(vec), abs.tol=1e-4)$value
+    r<-sapply(1:length(data),function(i){kdens(data[-i], h,data[i],wg[-i])/sum(1/vxMMEP[,i][[9]])})
+    d1cv<-matrix(data=0, ncol=1, nrow=length(data))
+    d2cv<-matrix(data=0, ncol=1, nrow=length(data))
 
-	d1cv[2:length(data)]<-sapply(2:length(data), function(i) d1cv[i]<-sum(1/vxMMEP[[9]][1:i-1]))
-	d2cv<-sapply(1:length(data),function(i) d2cv[i]<-sum(1/vxMMEP[,i][[9]]))
-	sob0Mcv<-1-d1cv/d2cv
-	sob0Mcv[sob0Mcv==0]<-0.0000001
-	t2<-sapply(1: nrow(r), function (i) t2<-2*alpnEP*sum(r[i,]*((biasfEP)^(-1)/(sob0Mcv)))/(length(data)-1))
+    d1cv[2:length(data)]<-sapply(2:length(data), function(i) d1cv[i]<-sum(1/vxMMEP[[9]][1:i-1]))
+    d2cv<-sapply(1:length(data),function(i) d2cv[i]<-sum(1/vxMMEP[,i][[9]]))
+    sob0Mcv<-1-d1cv/d2cv
+    sob0Mcv[sob0Mcv==0]<-0.0000001
+    t2<-sapply(1: nrow(r), function (i) t2<-2*alpnEP*sum(r[i,]*((biasfEP)^(-1)/(sob0Mcv)))/(length(data)-1))
 
-	return(t1-t2)
-}
-
-
+    return(t1-t2)
+  }
 
 
-ord<-order(X)
-X<-sort(X)
-U<-U[ord]
-V<-V[ord]
-vxx<-cbind(X,U,V)
+  if(any(is.na(U))==TRUE | any(is.na(V))==TRUE|any(is.na(X))==TRUE){
+    navec<-c(which(is.na(X)),which(is.na(U)),which(is.na(V)))
+    X<-X[-navec]
+    U<-U[-navec]
+    V<-V[-navec]
+    wg<-wg[-navec]
 
-vxM<-shen0(X,U,V)
-bias<-vxM[[9]]
-f3hatM<-1/vxM[[9]]
-	d1<-matrix(data=0, ncol=1, nrow=length(X))
-	d1[2:length(X)]<-sapply(2:length(X), function(i) d1[i]<-sum(1/vxM[[9]][1:i-1]))
-	d2<-sum(f3hatM)
-	sob0M<-1-d1/d2
+  }
 
 
-if(is.na(wg) == TRUE){
+  ord<-order(X)
+  X<-sort(X)
+  U<-U[ord]
+  V<-V[ord]
+  vxx<-cbind(X,U,V)
+
+  vxM<-CDF(X,U,V)
+  bias<-vxM[[9]]
+  f3hatM<-1/vxM[[9]]
+  d1<-matrix(data=0, ncol=1, nrow=length(X))
+  d1[2:length(X)]<-sapply(2:length(X), function(i) d1[i]<-sum(1/vxM[[9]][1:i-1]))
+  d2<-sum(f3hatM)
+  sob0M<-1-d1/d2
 
 
-	wg<-wgEP<-f3hatM/sob0M
-}
+  ifelse(is.na(wg)==TRUE, wg<-WgEP<-vxM[[5]], wg)
+  ifelse(missing(from)==TRUE, from<-min(X)+0.0001, from)
+  ifelse(missing(to)==TRUE, to<-max(X)-0.0001, to)
+  ifelse(missing(n)==TRUE, n<-500, n)
 
-Mdata<-X
-data<-X
 
-xx<-seq(from+0.0001,to,length=n)
-#xx<-seq(min(x)+0.0001,max(x),length=500)
-vec<-xx
-h<-seq(0.001,max(X), by=(max(X)-min(X))/500)
-####################
+
+  Mdata<-X
+  data<-X
+
+  xx<-seq(from+0.0001,to,length=n)
+  #xx<-seq(min(x)+0.0001,max(x),length=500)
+  vec<-xx
+  h<-seq(0.001,max(X), by=(max(X)-min(X))/500)
+  ####################
   #bandwidth selectors
   ####################
 
@@ -177,44 +187,44 @@ h<-seq(0.001,max(X), by=(max(X)-min(X))/500)
     hazard<-as.vector(kdens(data,bw,xx,wg)/sum(1/vxM[[9]]))
   }
 
-else {
+  else {
 
-vxMMEP<-list()
-vxMMEP<-sapply(1:length(X), function(i) vxMMEP<-shen0(vxx[-i,1],vxx[-i,2],vxx[-i,3]))
-biasfSEP<-list()
+    vxMMEP<-list()
+    vxMMEP<-sapply(1:length(X), function(i) vxMMEP<-CDF(vxx[-i,1],vxx[-i,2],vxx[-i,3]))
+    biasfSEP<-list()
 
-hatpsiEP<-list()
-#hatpsiEP<-sapply(1:length(X), function(i) hatpsiEP<-vxMMEP[,i][[11]])
-hatpsiEP<-sapply(1:length(X), function(i) hatpsiEP<-vxMMEP[,i][[9]])
+    hatpsiEP<-list()
+    #hatpsiEP<-sapply(1:length(X), function(i) hatpsiEP<-vxMMEP[,i][[11]])
+    hatpsiEP<-sapply(1:length(X), function(i) hatpsiEP<-vxMMEP[,i][[9]])
 
-aux1EP<-list()
-aux1EP<-sapply(1:length(X), function(i) aux1EP<-( vxx[i,1]>=vxx[-i,2])& ( vxx[i,1]<=vxx[-i,3]))*1L
+    aux1EP<-list()
+    aux1EP<-sapply(1:length(X), function(i) aux1EP<-( vxx[i,1]>=vxx[-i,2])& ( vxx[i,1]<=vxx[-i,3]))*1L
 
-weightsEP<-aux1EP*hatpsiEP
-biasfEP<- apply(weightsEP,2,"sum")
-alpnEP<-((1/(length(X)-1))*sum(1/biasfEP))^(-1)
-####fhaz1<-vxMMEP[,i][[9]]
+    weightsEP<-aux1EP*hatpsiEP
+    biasfEP<- apply(weightsEP,2,"sum")
+    alpnEP<-((1/(length(X)-1))*sum(1/biasfEP))^(-1)
+    ####fhaz1<-vxMMEP[,i][[9]]
 
-Score_EP<-CVhazardEP(h, data, wgEP,bias, vxMMEP,alpnEP,biasfEP)
-ind_EP<-which.min(Score_EP)
+    Score_EP<-CVhazardEP(h, data, wg,bias, vxMMEP,alpnEP,biasfEP)
+    ind_EP<-which.min(Score_EP)
 
-hopt_LSCV<-h[ind_EP]
+    hopt_LSCV<-h[ind_EP]
 
-hazard_LSCV<-as.vector(kdens(data,hopt_LSCV,xx,wgEP)/sum(1/vxM[[9]]))
-
-
-
-}
+    hazard_LSCV<-as.vector(kdens(data,hopt_LSCV,xx,wg)/sum(1/vxM[[9]]))
 
 
 
-if(is.numeric(bw)){
+  }
+
+
+
+  if(is.numeric(bw)){
     return(invisible(list(x=round(xx,5),y=round(hazard,5),bw=bw)))
   }
 
-else{
+  else{
 
-return(invisible(list(x=round(xx,5),y=round(hazard_LSCV,5),bw=hopt_LSCV)))
+    return(invisible(list(x=round(xx,5),y=round(hazard_LSCV,5),bw=hopt_LSCV)))
   }
 }
 

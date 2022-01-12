@@ -43,12 +43,13 @@ A matrix with \code{n} unit length rows representing the generated values from a
 %}
 \examples{
 
+set.seed(4321)
 rsim.DT(500,1/2, model=2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
- \keyword{ ~double truncation }
- \keyword{ ~observational bias }
+ \keyword{double truncation }
+ \keyword{observational bias }
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
 % \concept{ ~cpt1 }

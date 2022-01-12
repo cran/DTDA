@@ -6,12 +6,12 @@ efron.petrosian <-
  # set truncation both side by default
     trunc <- "both"
 
-    # analize if we have a NA and remove then
-    if (all(is.na(U)) == TRUE) {
+   # analize if we have a NA and remove then
+    if (all(is.na(U)) == TRUE & !all(is.na(V)) == TRUE) {
       trunc <- "right"
       cat("case U=NA","\n")
-      #if (my_debug)
-        #cat("case U=NA", "\n") # show some debug
+	  cat("warning: data on one truncation limit are missing; the result is based on an iterative algorithm, but an explicit-form NPMLE (Lynden-Bell estimator) exists","\n")
+
 
       if (any(is.na(V)) == TRUE | any(is.na(X)) == TRUE) {
         navec <- c(which(is.na(X)), which(is.na(V)))
@@ -22,15 +22,34 @@ efron.petrosian <-
 
 
 
-	if(all(is.na(V))==TRUE){
+	 # check for NA in the resulting vector
+    if (all(is.na(V)) == TRUE & !all(is.na(U)) == TRUE) {
+      trunc <- "left"
+      cat("case V=NA","\n")
+cat("warning: data on one truncation limit are missing; the result is based on an iterative algorithm, but an explicit-form NPMLE (Lynden-Bell estimator) exists","\n")
 
-	trunc<-"left"
-	cat("case V=NA","\n")
-	if(any(is.na(U))==TRUE|any(is.na(X))==TRUE){
-	navec<-c(which(is.na(X)),which(is.na(U)))
-	X<-X[-navec]
-	U<-U[-navec]
-	}}
+      if (any(is.na(U)) == TRUE | any(is.na(X)) == TRUE) {
+        navec <- c(which(is.na(X)), which(is.na(U)))
+        X <- X[-navec]
+        U <- U[-navec]
+      }
+    }
+	
+if (all(is.na(V)) == TRUE & all(is.na(U)) == TRUE) {
+cat("case U=NA and V=NA","\n")
+stop("warning: data on at least one truncation limit (left or right) is required","\n")
+}	
+	
+	# if trunccation is set both sides prepare the arrays
+    if (trunc == "both") {
+      if (any(is.na(U)) == TRUE |
+          any(is.na(V)) == TRUE | any(is.na(X)) == TRUE) {
+        navec <- c(which(is.na(X)), which(is.na(U)), which(is.na(V)))
+        X <- X[-navec]
+        U <- U[-navec]
+        V <- V[-navec]
+      }
+    }
 
 # check for some na in wight matrices
     if (is.na(wt) == TRUE)
@@ -61,9 +80,9 @@ efron.petrosian <-
       D[ord, 2:ncol(D)] # use the ordered indeces for ordering
 
 	T<-table(C[,2]<= C[,1]&C[,1]<=C[,3])
-	if(length(T)!=1){
-	stop("Condition of double truncation is violated","\n")
-	}
+    if(sum(T[names(T)=="TRUE"])!=length(X) |sum(T[names(T)=="TRUE"]==0)){
+      stop("Condition of double truncation is violated","\n")
+    }
 
     if (is.na(error) == TRUE)
       error <- 1e-6
@@ -122,9 +141,9 @@ n.event<-mult
 #f<-Fval
 FF<-cumsum(Fval)
 FFF<-cumsum(f)
-#Sob<-1-FF+f
-#Sob[Sob < 1e-12] <- 0
-    Sob0<-1-FFF
+Sob<-1-FF+Fval
+Sob[Sob < 1e-12] <- 0
+    Sob0<-1-FFF+f
 	Sob0[Sob0<1e-12]<-0
 
 
@@ -201,19 +220,25 @@ if(trunc=="both"|trunc=="left"){
               M2b[, 2:ncol(M1b)] <- M1b[ord, 2:ncol(M1b)]
 
               # preallocate
+			  Aun<-unique(M2b)
 				Jb <- matrix(data = 0,ncol = nrow(M2b), nrow = nrow(M2b))
 
               aub <- outer(M2b[, 1], M2b[, 2], ">=")
+			  aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(M2b[, 1], M2b[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(M2b[, 2], M2b[, 2], "<=") * 1L
               Jb <- aub * avb
-              SCb <- colSums(Jb)
+			  Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
               adb <- length(which(SCb == 1))
+			  adbb <- length(which(SCb2 == 1))
 
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+            if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -395,19 +420,24 @@ if(trunc=="both"|trunc=="left"){
               M2b[, 2:ncol(M1b)] <- M1b[ord, 2:ncol(M1b)]
 
 			              # preallocate
+						  Aun<-unique(M2b)
               Jb <- matrix(data = 0,ncol = nrow(M2b), nrow = nrow(M2b))
 
               aub <- outer(M2b[, 1], M2b[, 2], ">=")
+			  aubun <- outer(Aun[, 1], Aun[, 2], ">=")
               avb <- outer(M2b[, 1], M2b[, 3], "<=")
+			  avbun<-outer(Aun[, 1], Aun[, 3], "<=")
               auub <- outer(M2b[, 2], M2b[, 2], "<=") * 1L
               Jb <- aub * avb
-              SCb <- colSums(Jb)
+			  Jbun<-aubun*avbun
+              SCb <-colSums(Jbun)
+				SCb2<-rowSums(Jbun)
               adb <- length(which(SCb == 1))
-
+			  adbb <- length(which(SCb2 == 1))
               n_sampling_tries <- n_sampling_tries + 1 # counter for number of tries
 
             # if the condition is set, we break the repat, otherwise repeat sampling  process
-            if (adb == 0)
+            if (adb == 0 & adbb==0)
               break
             else
               cat("Warning. Non-uniqueness or no existence of the NPMLE - New Round","\n")
@@ -557,22 +587,22 @@ if(trunc=="both"|trunc=="left"){
 	if(boot==TRUE){
 
 	if(trunc=="both"|trunc=="left"){
-	x<-C[,1]
+	x<-unique(C[,1])
 	if((display.F==TRUE)&(display.S==TRUE)){
 
 	dev.new()
 	par(mfrow=c(1,2))
 
 
-plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FFF[1])
+segments(x[1],0,x[1],FF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FFF[i],x[i+1],FFF[i])
-segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
 }
 
 
@@ -596,7 +626,7 @@ segments(C[i+1,1],lowerF[i],C[i+1,1],lowerF[i+1],lty=3)
 }
 
 
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
@@ -605,8 +635,8 @@ segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob0[i],x[i+1],Sob0[i])
-segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
 }
 
 segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -637,17 +667,17 @@ segments(C[i+1,1],lowerS[i],C[i+1,1],lowerS[i+1],lty=3)
 
 
 if((display.S==FALSE)&(display.F==TRUE)){
-x<-C[,1]
+#x<-C[,1]
 dev.new()
-plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
-segments(x[1],0,x[1],FFF[1])
+segments(x[1],0,x[1],FF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FFF[i],x[i+1],FFF[i])
-segments(x[i+1],FFF[i],x[i+1],FF[i+1])
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
 }
 
 
@@ -674,7 +704,7 @@ segments(C[i+1,1],lowerF[i],C[i+1,1],lowerF[i+1],lty=3)
 
 if((display.F==FALSE)&(display.S==TRUE)){
 dev.new()
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
@@ -683,8 +713,8 @@ segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob0[i],x[i+1],Sob0[i])
-segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
 }
 
 segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -715,18 +745,18 @@ if(trunc=="right"){
 
 
 if((display.F==TRUE)&(display.S==TRUE)){
-x<-C[,1]
+x<-unique(C[,1])
 dev.new()
 par(mfrow=c(1,2))
-plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
 segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FFF[i],x[i+1],FFF[i])
-segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
 }
 
 
@@ -750,7 +780,7 @@ segments(C[,1][i+1],lowerF[i],C[,1][i+1],lowerF[i+1],lty=3)
 }
 
 
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
@@ -759,8 +789,8 @@ segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob0[i],x[i+1],Sob0[i])
-segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
 }
 
 segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -787,10 +817,10 @@ segments(C[,1][i+1],lowerS[i],C[,1][i+1],lowerS[i+1],lty=3)
 } ##display TRUE AND TRUE
 
 if((display.F==FALSE)&(display.S==TRUE)){
-x<-C[,1]
+x<-unique(C[,1])
 dev.new()
 par(mfrow=c(1,1))
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
@@ -800,8 +830,8 @@ segments(max(x),0,max(x),min(Sob0))
 
 
 for(i in 1:(length(x)-1)){
-segments(x[i],Sob0[i],x[i+1],Sob0[i])
-segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
+segments(x[i],Sob[i],x[i+1],Sob[i])
+segments(x[i+1],Sob[i],x[i+1],Sob[i+1])
 }
 
 segments(min(C[,1])-(max(C[,1])-min(C[,1]))/length(C[,1]),1,C[,1][1],1,lty=3)
@@ -827,18 +857,18 @@ segments(C[,1][i+1],lowerS[i],C[,1][i+1],lowerS[i+1],lty=3)
 }###DISPLAY FALSE AND TRUE
 
 if((display.F==TRUE)&(display.S==FALSE)){
-x<-C[,1]
+x<-unique(C[,1])
 dev.new()
 par(mfrow=c(1,1))
-plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
 segments(x[1],0,x[1],FFF[1])
 
 for(i in 1:(length(x)-1)){
-segments(x[i],FFF[i],x[i+1],FFF[i])
-segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
+segments(x[i],FF[i],x[i+1],FF[i])
+segments(x[i+1],FF[i],x[i+1],FF[i+1])
 }
 
 
@@ -876,7 +906,7 @@ if((display.F==TRUE)&(display.S==TRUE)){
 x<-C[,1]
 dev.new()
 par(mfrow=c(1,2))
-plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
@@ -890,11 +920,14 @@ segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 
 
 
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
 segments(max(x),0,max(x),min(Sob0))
-
+segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob0[1],
+         y1 = 1) 
 
 
 for(i in 1:(length(x)-1)){
@@ -909,7 +942,7 @@ segments(x[i+1],Sob0[i],x[i+1],Sob0[i+1])
 if((display.S==FALSE)&(display.F==TRUE)){
 x<-C[,1]
 dev.new()
-plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
@@ -925,11 +958,14 @@ segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 if((display.F==FALSE)&(display.S==TRUE)){
 x<-C[,1]
 dev.new()
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
 segments(max(x),0,max(x),min(Sob0))
-
+segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob0[1],
+         y1 = 1) 
 
 
 for(i in 1:(length(x)-1)){
@@ -952,7 +988,7 @@ if((display.F==TRUE)&(display.S==TRUE)){
 x<-C[,1]
 dev.new()
 par(mfrow=c(1,2))
-plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
@@ -963,11 +999,14 @@ segments(x[i],FFF[i],x[i+1],FFF[i])
 segments(x[i+1],FFF[i],x[i+1],FFF[i+1])
 }
 
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
 segments(max(x),0,max(x),min(Sob0))
-
+segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob0[1],
+         y1 = 1) 
 
 
 for(i in 1:(length(x)-1)){
@@ -984,12 +1023,15 @@ x<-C[,1]
 dev.new()
 
 par(mfrow=c(1,1))
-plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="Time of interest",ylab="")
+plot(x,Sob0,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="Survival", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),1,x[1],1)
 segments(max(x),0,max(x)+(max(x)-min(x))/length(x),0)
 segments(max(x),0,max(x),min(Sob0))
-
+segments(x0 = min(x),
+         x1 = min(x),
+         y0 = Sob0[1],
+         y1 = 1) 
 
 
 for(i in 1:(length(x)-1)){
@@ -1002,7 +1044,7 @@ if((display.F==TRUE)&(display.S==FALSE)){
 x<-C[,1]
 dev.new()
 par(mfrow=c(1,1))
-plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="EP estimator", xlab="Time of interest",ylab="")
+plot(x,FFF,ylim=c(0,1),xlim=c(min(x)-(max(x)-min(x))/length(x),max(x)+(max(x)-min(x))/length(x)),type="n",main="CDF", xlab="X",ylab="")
 
 segments(min(x)-(max(x)-min(x))/length(x),0,x[1],0)
 segments(max(x),1,max(x)+(max(x)-min(x))/length(x),1)
@@ -1035,7 +1077,7 @@ if(boot==TRUE){
 
 return(invisible(list(n.iterations=iter, events=events, B=B, alpha=alpha,time=C[,1], n.event=mult, density=round(as.vector(f),5), cumulative.df=round(FFF,5), survival=
 round(as.vector(Sob0),5), truncation.probs=round(as.vector(F0),5), upper.df=round(upperF,5),lower.df=round(lowerF,5),upper.Sob=round(upperS,5),
-lower.Sob=round(lowerS,5), sd.boot=round(stderror,5),Boot.Repeat=as.vector(BootRepeat))))
+lower.Sob=round(lowerS,5), sd.boot=round(stderror,5),boot.repeat=as.vector(BootRepeat))))
 
 
 }

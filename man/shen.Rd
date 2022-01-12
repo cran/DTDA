@@ -2,9 +2,9 @@
 \name{shen}
 \alias{shen}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{ Doubly truncated data analysis with the Shen algorithm }
+\title{ NPMLE computation with Shen algorithm}
 \description{
-  This function computes the NPMLE of a lifetime distribution function observed under one-sided (right or left) and two-sided (double) truncation.
+  This function computes the NPMLE for the cumulative distribution function of  \code{X} observed under one-sided (right or left) and two-sided (double) truncation.
 The NPMLE of the joint distribution of the truncation times along with its marginal distributions are also computed.
 It provides bootstrap pointwise confidence limits too.
 
@@ -17,9 +17,9 @@ shen(X, U = NA, V = NA, wt = NA, error = NA,
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{X}{ Numeric vector with the times of ultimate interest.}
-  \item{U}{ Numeric vector with the left truncation times. If there are no truncation times from the left, put \code{U}=\code{NA}.}
-  \item{V}{ Numeric vector with the right truncation times. If there are no truncation times from the left, put \code{V}=\code{NA}.}
+  \item{X}{ Numeric vector with the values of the target variable.}
+  \item{U}{Numeric vector with the values of the left truncation variable. If there are no truncation values from the left, put \code{U}=\code{NA}.}
+  \item{V}{ Numeric vector with the values of the right truncation variable. If there are no truncation values from the right, put \code{V}=\code{NA}.}
   \item{wt}{ Numeric vector of non-negative initial solution, with the same length as \code{X}. Default value is set to 1/n, being n the length of \code{X}. }
   \item{error}{ Numeric value. Maximum pointwise error when estimating the density associated to X (f) in two consecutive steps. If this is missing, it is $1e{-06}$.}
   \item{nmaxit}{ Numeric value. Maximum number of iterations. If this is missing, it is set to \code{nmaxit} =100 . }
@@ -35,7 +35,7 @@ shen(X, U = NA, V = NA, wt = NA, error = NA,
  This must be one of "image" or "persp", with default \code{NULL}. }
 }
 \details{
-   The NPMLE of the lifetime is computed by a single algorithm proposed in Shen (2008). This is an alternative algorithm which converges to the
+ The NPMLE for the cumulative distribution function is computed by a single algorithm proposed in \cite{Shen (2010)}. This is an iterative algorithm which converges to the
 NMPLE after a number of iterations. Initial solutions are given by the ordinary empirical distribution functions.
 If the second (respectively third) argument is missing, computation of the Lynden-Bell estimator for right-truncated (respectively left-truncated)
  data is obtained.
@@ -50,7 +50,7 @@ A list containing the following values:
  \item{events}{The total number of events. }
  \item{density }{The estimated density values associated to \code{X}. }
  \item{cumulative.df }{The estimated cumulative distribution values of \code{X}. }
- \item{truncation.probs }{The probabilities of truncation values, in each region. }
+ \item{truncation.probs }{The probability of \code{X} falling into each truncation interval.}
  \item{S0 }{ \code{error} reached in the algorithm. }
  \item{Survival }{The estimated survival values. }
  \item{density.joint }{The estimated joint densities values associated to \code{(U,V}).  }
@@ -70,8 +70,8 @@ A list containing the following values:
  \item{lower.fU }{The estimated lower limits of the confidence intervals for \code{fU}. }
 \item{upper.fV }{The estimated upper limits of the confidence intervals for \code{fV}. }
  \item{lower.fV }{The estimated lower limits of the confidence intervals for \code{fV}. }
-  \item{sd.boot }{The bootstrap standard deviation.}
-\item{ Boot.Repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
+  \item{sd.boot }{The bootstrap standard deviation of F estimator.}
+\item{boot.repeat }{The number of resamples done in each bootstrap call to ensure the existence and uniqueness of the bootstrap NPMLE. }
 
 }
 
@@ -91,7 +91,8 @@ Xiao J,  Hudgens MG (2020) On nonparametric maximum likelihood estimation with d
 
 ##  Generating data which are doubly truncated
 
-n<-25
+set.seed(4321)
+n<-100
 X<-runif(n,0,1)
 U<-runif(n,0,0.67)
 V<-runif(n,0.33,1)
